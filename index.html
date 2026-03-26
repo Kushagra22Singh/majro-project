@@ -1,205 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Leaflens - Crop Disease Detection & Weather Insights for Farmers</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <header class="site-header">
-        <nav class="container">
-            <a class="logo" href="#home">Leaflens</a>
-            <ul class="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#services">Services</a></li>
-                <li><a href="#about">About</a></li>
-            </ul>
-            <button class="mobile-toggle" type="button" aria-label="Toggle navigation">☰</button>
-        </nav>
-    </header>
-
-    <main>
-        <section id="home" class="hero">
-            <div class="container hero-shell">
-                <div class="hero-copy">
-                    <p class="hero-kicker">Precision farming demo for Indian growers</p>
-                    <h1>Spot crop disease faster and plan field work with more confidence.</h1>
-                    <p class="hero-text">Leaflens brings crop symptom screening and simple weather guidance into one clear mobile-friendly interface so farmers can review what they see in the field and decide what to do next.</p>
-                    <div class="hero-actions">
-                        <a href="#services" class="cta-button">Try Demo</a>
-                        <a href="#about" class="secondary-button">See Project Scope</a>
-                    </div>
-                    <div class="hero-highlights">
-                        <span>6 crop profiles</span>
-                        <span>Disease result cards</span>
-                        <span>3-day forecast panel</span>
-                    </div>
-                </div>
-                <aside class="hero-panel">
-                    <div class="hero-panel-card">
-                        <p class="panel-label">Field Snapshot</p>
-                        <h2>One screen for the two checks farmers make most often.</h2>
-                        <div class="snapshot-list">
-                            <div class="snapshot-item">
-                                <span class="snapshot-value">01</span>
-                                <div>
-                                    <h3>Leaf scan demo</h3>
-                                    <p>Select a crop, upload a leaf image, and review a structured disease summary.</p>
-                                </div>
-                            </div>
-                            <div class="snapshot-item">
-                                <span class="snapshot-value">02</span>
-                                <div>
-                                    <h3>Weather outlook</h3>
-                                    <p>Generate a quick three-day forecast card with rainfall and work advice.</p>
-                                </div>
-                            </div>
-                            <div class="snapshot-item">
-                                <span class="snapshot-value">03</span>
-                                <div>
-                                    <h3>Field-ready layout</h3>
-                                    <p>Large touch targets and short summaries keep the interface usable on phones.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </aside>
-            </div>
-        </section>
-
-        <section id="services" class="services-section">
-            <div class="container">
-                <div class="section-heading">
-                    <p class="section-label">Platform</p>
-                    <h2 class="section-title">Built around the two screens growers reach for first</h2>
-                    <p class="section-copy">This version is still a frontend demo, but the interface now feels closer to a real product with clearer hierarchy, stronger form panels, and easier-to-scan outputs.</p>
-                </div>
-
-                <div class="services-grid">
-                    <article class="service-card">
-                        <div class="service-icon">🌿</div>
-                        <p class="service-tag">Disease Detection</p>
-                        <h3>Leaf symptom screening</h3>
-                        <p>Guide the user from crop selection to image upload with a focused result card and practical treatment advice.</p>
-                    </article>
-                    <article class="service-card">
-                        <div class="service-icon">☁️</div>
-                        <p class="service-tag">Weather Planning</p>
-                        <h3>Field-ready forecast panel</h3>
-                        <p>Summarize temperature, rainfall probability, and a short recommendation for the next three days.</p>
-                    </article>
-                </div>
-
-                <div class="demo-grid">
-                    <section class="tool-panel" aria-labelledby="detection-heading">
-                        <div class="panel-heading">
-                            <p class="panel-label">Demo 01</p>
-                            <h3 class="demo-title" id="detection-heading">Detect Crop Disease</h3>
-                            <p class="panel-copy">Simulate a farmer uploading a leaf image and receiving a clear diagnosis card with crop context and next-step advice.</p>
-                        </div>
-
-                        <form class="detection-form" id="diseaseForm">
-                            <div class="form-group">
-                                <label for="crop-type">Select Crop</label>
-                                <select id="crop-type">
-                                    <option>Rice</option>
-                                    <option>Wheat</option>
-                                    <option>Tomato</option>
-                                    <option>Potato</option>
-                                    <option>Maize</option>
-                                    <option>Sugarcane</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="image-upload">Upload Leaf Photo</label>
-                                <input type="file" id="image-upload" accept="image/*">
-                                <p class="form-hint">Demo mode only. If you skip upload, Leaflens will use a sample disease image.</p>
-                                <p class="upload-status" id="upload-status">No image selected yet.</p>
-                            </div>
-                            <div class="form-group">
-                                <button type="submit">Analyze Image</button>
-                            </div>
-                        </form>
-
-                        <div id="result" class="result-card">
-                            <div class="result-header">
-                                <div>
-                                    <p class="result-label">Detection Result</p>
-                                    <h3 id="disease-title"></h3>
-                                </div>
-                                <span class="result-pill">Demo Output</span>
-                            </div>
-                            <p id="analysis-summary" class="result-summary"></p>
-                            <div class="result-body">
-                                <div class="result-details">
-                                    <p id="disease-desc"></p>
-                                    <p id="disease-severity"></p>
-                                    <p id="disease-advice"></p>
-                                </div>
-                                <img id="disease-img" class="disease-img" src="" alt="Disease example">
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="tool-panel" aria-labelledby="weather-heading">
-                        <div class="panel-heading">
-                            <p class="panel-label">Demo 02</p>
-                            <h3 class="forecast-title" id="weather-heading">Weather Forecast</h3>
-                            <p class="panel-copy">Generate a three-day local weather panel with crop-friendly fieldwork guidance.</p>
-                        </div>
-
-                        <form class="weather-form" id="weatherForm">
-                            <div class="form-group">
-                                <label for="location">Your Location</label>
-                                <input type="text" id="location" placeholder="Delhi, Punjab, Lucknow...">
-                            </div>
-                            <div class="form-group">
-                                <button type="submit">Get 3-Day Forecast</button>
-                            </div>
-                        </form>
-
-                        <p id="weather-meta-info" class="weather-source">Live forecast powered by Open-Meteo.</p>
-
-                        <div id="weather-result" class="weather-grid"></div>
-                    </section>
-                </div>
-            </div>
-        </section>
-
-        <section id="about" class="about-section">
-            <div class="container">
-                <div class="section-heading">
-                    <p class="section-label">About</p>
-                    <h2 class="section-title">A student project with a field-first interface</h2>
-                </div>
-                <div class="about-grid">
-                    <article class="about-card about-card-primary">
-                        <h3>Why this concept matters</h3>
-                        <p class="about-copy">Many crop decisions happen quickly and directly in the field. Leaflens is designed to keep important information visible, readable, and actionable on a phone-sized screen.</p>
-                    </article>
-                    <article class="about-card">
-                        <h3>What the current demo includes</h3>
-                        <ul class="about-list">
-                            <li>Separate HTML, CSS, and JavaScript files for easier project scaling.</li>
-                            <li>Clearer hierarchy between hero content, feature cards, and interactive tools.</li>
-                            <li>Responsive panels that stay usable on desktop and mobile layouts.</li>
-                        </ul>
-                    </article>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="container footer-shell">
-            <p class="footer-brand">Leaflens Demo</p>
-            <p>Educational frontend prototype for crop health workflows • March 2026</p>
-        </div>
-    </footer>
-    <script src="script.js"></script>
-</body>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root">
+      <div style="font-family: Arial, sans-serif; max-width: 760px; margin: 40px auto; padding: 16px; border: 1px solid #e2e2e2; border-radius: 10px; background: #fff; color: #1f2937; line-height: 1.5;">
+        <h2 style="margin: 0 0 8px;">Leaflens is loading...</h2>
+        <p style="margin: 0;">If this message does not disappear, start the app with <code>npm run dev</code> and open the terminal URL.</p>
+      </div>
+    </div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
