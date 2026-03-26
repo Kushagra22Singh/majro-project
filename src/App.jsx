@@ -205,6 +205,7 @@ function App() {
   const [weatherCards, setWeatherCards] = useState([]);
   const [weatherMetaInfo, setWeatherMetaInfo] = useState("Live forecast powered by Open-Meteo.");
   const [weatherStatus, setWeatherStatus] = useState(null);
+  const [demoUploadStep, setDemoUploadStep] = useState(1);
 
   const previewUrl = useMemo(() => {
     if (selectedFile) {
@@ -225,15 +226,47 @@ function App() {
     event.preventDefault();
 
     const possible = diseases.filter((disease) => disease.crop.includes(crop));
-    const randomPool = possible.length ? possible : diseases;
-    const randDisease = randomPool[Math.floor(Math.random() * randomPool.length)];
+    const diseaseForCrop = (possible.length ? possible : diseases)[0];
     const imageSource = previewUrl || diseaseImgs[Math.floor(Math.random() * diseaseImgs.length)];
 
+    const fileName = selectedFile?.name.toLowerCase() || "";
+    const firstImagePattern = /(first|image[\s_-]*1|img[\s_-]*1|sample[\s_-]*1)/;
+    const secondImagePattern = /(second|image[\s_-]*2|img[\s_-]*2|sample[\s_-]*2)/;
+
+    let shouldDetectDisease = false;
+
+    if (selectedFile) {
+      if (firstImagePattern.test(fileName)) {
+        shouldDetectDisease = false;
+      } else if (secondImagePattern.test(fileName)) {
+        shouldDetectDisease = true;
+      } else {
+        shouldDetectDisease = demoUploadStep >= 2;
+      }
+
+      setDemoUploadStep((prev) => prev + 1);
+    }
+
+    const resultPayload = shouldDetectDisease
+      ? {
+          ...diseaseForCrop,
+          statusLabel: "Disease detected"
+        }
+      : {
+          name: "No disease detected",
+          desc: "Leaf appears healthy in this demo pass. No visible disease signature was identified.",
+          severity: "None",
+          advice: "Continue regular monitoring, balanced irrigation, and preventive care.",
+          crop: [crop],
+          statusLabel: "Disease not detected"
+        };
+
     setDiseaseResult({
-      ...randDisease,
+      ...resultPayload,
       crop,
       imageSource,
-      imageAlt: selectedFile ? `${crop} leaf uploaded for analysis` : `${randDisease.name} sample image`
+      isDetected: shouldDetectDisease,
+      imageAlt: selectedFile ? `${crop} leaf uploaded for analysis` : `${resultPayload.name} sample image`
     });
   };
 
@@ -439,6 +472,9 @@ function App() {
                     <p className="form-hint">
                       Demo mode only. If you skip upload, Leaflens will use a sample disease image.
                     </p>
+                    <p className="form-hint">
+                      Interview demo mode: first uploaded image shows no disease, second uploaded image shows disease.
+                    </p>
                     <p className="upload-status">{uploadStatus}</p>
                   </div>
                   <div className="form-group">
@@ -457,7 +493,8 @@ function App() {
                     </div>
                     <p className="result-summary">
                       <strong>Crop analyzed:</strong> {diseaseResult.crop} • <strong>Mode:</strong>{" "}
-                      {selectedFile ? "Uploaded image preview" : "Sample image demo"}
+                      {selectedFile ? "Uploaded image preview" : "Sample image demo"} • <strong>Status:</strong>{" "}
+                      {diseaseResult.statusLabel}
                     </p>
                     <div className="result-body">
                       <div className="result-details">
