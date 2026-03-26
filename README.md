@@ -16,6 +16,11 @@ npm run build
 npm run preview
 ```
 
+## Live Website
+
+- URL: `https://kushagra22singh.github.io/majro-project/`
+- Deployment: automatic via GitHub Actions on every push to `main`
+
 ## Project Structure
 
 - `index.html` - React mount point
