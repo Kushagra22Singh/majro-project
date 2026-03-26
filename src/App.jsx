@@ -230,7 +230,7 @@ function getDiseaseInsight(result) {
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [crop, setCrop] = useState("Rice");
+  const [crop, setCrop] = useState("Tomato");
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState("No image selected yet.");
   const [diseaseResult, setDiseaseResult] = useState(null);
@@ -240,6 +240,25 @@ function App() {
   const [weatherStatus, setWeatherStatus] = useState(null);
   const [isInterviewMode, setIsInterviewMode] = useState(false);
   const [demoUploadStep, setDemoUploadStep] = useState(1);
+
+  const supportedModelCrops = [
+    "Apple",
+    "Blueberry",
+    "Cherry",
+    "Maize",
+    "Grape",
+    "Orange",
+    "Peach",
+    "Bell Pepper",
+    "Potato",
+    "Raspberry",
+    "Soybean",
+    "Squash",
+    "Strawberry",
+    "Tomato"
+  ];
+
+  const [detectionStatus, setDetectionStatus] = useState(null);
 
   const previewUrl = useMemo(() => {
     if (selectedFile) {
@@ -258,58 +277,86 @@ function App() {
 
   const handleDiseaseSubmit = (event) => {
     event.preventDefault();
+    setDetectionStatus({ type: "loading", message: "Analyzing image with ML model..." });
 
-    const possible = diseases.filter((disease) => disease.crop.includes(crop));
-    const randomPool = possible.length ? possible : diseases;
-    const diseaseForCrop = randomPool[0];
-    const imageSource = previewUrl || diseaseImgs[Math.floor(Math.random() * diseaseImgs.length)];
-
-    let shouldDetectDisease = true;
-    let resultPayload;
-
-    if (isInterviewMode) {
-      const fileName = selectedFile?.name.toLowerCase() || "";
-      const firstImagePattern = /(first|image[\s_-]*1|img[\s_-]*1|sample[\s_-]*1)/;
-      const secondImagePattern = /(second|image[\s_-]*2|img[\s_-]*2|sample[\s_-]*2)/;
-
-      if (firstImagePattern.test(fileName)) {
-        shouldDetectDisease = false;
-      } else if (secondImagePattern.test(fileName)) {
-        shouldDetectDisease = true;
-      } else {
-        shouldDetectDisease = demoUploadStep >= 2;
-      }
-
-      setDemoUploadStep((prev) => prev + 1);
-
-      resultPayload = shouldDetectDisease
-        ? {
-            ...diseaseForCrop,
-            statusLabel: "Disease detected"
-          }
-        : {
-            name: "No disease detected",
-            desc: "Leaf appears healthy in this demo pass. No visible disease signature was identified.",
-            severity: "None",
-            advice: "Continue regular monitoring, balanced irrigation, and preventive care.",
-            crop: [crop],
-            statusLabel: "Disease not detected"
-          };
-    } else {
-      const randDisease = randomPool[Math.floor(Math.random() * randomPool.length)];
-      resultPayload = {
-        ...randDisease,
-        statusLabel: "Disease detected"
-      };
+    if (!selectedFile) {
+      setDetectionStatus({ type: "error", message: "Please upload an image first." });
+      return;
     }
 
-    setDiseaseResult({
-      ...resultPayload,
-      crop,
-      imageSource,
-      isDetected: shouldDetectDisease,
-      imageAlt: selectedFile ? `${crop} leaf uploaded for analysis` : `${resultPayload.name} sample image`
-    });
+    const formData = new FormData();
+    formData.append("image", selectedFile);
+    formData.append("crop", crop);
+
+    fetch("http://localhost:5000/predict", {
+      method: "POST",
+      body: formData
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((payload) => {
+            throw new Error(payload.error || "API request failed. Is the backend running on port 5000?");
+          });
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.error) {
+          setDetectionStatus({ type: "error", message: data.error });
+          return;
+        }
+
+        // Parse disease name and severity
+        const diseaseName = data.disease.replace(/_/g, " ");
+        const isHealthy = diseaseName.toLowerCase().includes("healthy");
+        const confidence = data.confidence.toFixed(2);
+        const needsReview = Boolean(data.needs_review);
+        const uncertaintyReasons = data.uncertainty_reasons || [];
+        const confidenceMargin = typeof data.confidence_margin === "number"
+          ? data.confidence_margin.toFixed(2)
+          : "N/A";
+
+        // Map to severity levels
+        let severity = "Moderate";
+        if (isHealthy) {
+          severity = "None";
+        } else if (diseaseName.includes("Blast") || diseaseName.includes("Blight")) {
+          severity = "High";
+        }
+
+        // Create result payload
+        const resultPayload = {
+          name: diseaseName,
+          desc: needsReview
+            ? `Model predicted ${diseaseName} (${confidence}%), but this result needs verification.`
+            : `ML model detected: ${diseaseName} with ${confidence}% confidence.`,
+          severity,
+          advice: needsReview
+            ? "Retake a clear leaf-only photo and verify with an expert before treatment decisions."
+            : isHealthy
+              ? "Continue regular monitoring, balanced irrigation, and preventive care."
+              : "Please consult with an agronomist for detailed treatment recommendations.",
+          crop: [crop],
+          statusLabel: isHealthy ? "Disease not detected" : "Disease detected",
+          confidence: parseFloat(confidence),
+          topPredictions: data.top_3 || [],
+          needsReview,
+          uncertaintyReasons,
+          confidenceMargin
+        };
+
+        setDiseaseResult({
+          ...resultPayload,
+          imageSource: previewUrl,
+          isDetected: !isHealthy,
+          imageAlt: `${crop} leaf uploaded for analysis`
+        });
+        setDetectionStatus(null);
+      })
+      .catch((error) => {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+        setDetectionStatus({ type: "error", message: errorMessage });
+      });
   };
 
   const handleWeatherSubmit = async (event) => {
@@ -502,12 +549,9 @@ function App() {
                   <div className="form-group">
                     <label htmlFor="crop-type">Select Crop</label>
                     <select id="crop-type" value={crop} onChange={(event) => setCrop(event.target.value)}>
-                      <option>Rice</option>
-                      <option>Wheat</option>
-                      <option>Tomato</option>
-                      <option>Potato</option>
-                      <option>Maize</option>
-                      <option>Sugarcane</option>
+                      {supportedModelCrops.map((cropName) => (
+                        <option key={cropName}>{cropName}</option>
+                      ))}
                     </select>
                   </div>
                   <div className="form-group">
@@ -523,7 +567,7 @@ function App() {
                       }}
                     />
                     <p className="form-hint">
-                      Demo mode only. If you skip upload, Leaflens will use a sample disease image.
+                      Crop list is limited to what your current ML model supports.
                     </p>
                     <p className="upload-status">{uploadStatus}</p>
                   </div>
@@ -532,6 +576,12 @@ function App() {
                   </div>
                 </form>
 
+                {detectionStatus && (
+                  <div className={`weather-status weather-status-${detectionStatus.type}`} style={{ marginTop: "20px" }}>
+                    {detectionStatus.message}
+                  </div>
+                )}
+
                 {diseaseResult && (
                   <div className="result-card" data-severity={diseaseResult.severity.toLowerCase()} style={{ display: "block" }}>
                     <div className="result-header">
@@ -539,11 +589,17 @@ function App() {
                         <p className="result-label">Detection Result</p>
                         <h3 id="disease-title">{diseaseResult.name}</h3>
                       </div>
-                      <span className="result-pill">Demo Output</span>
+                      <span className="result-pill">
+                        {diseaseResult.needsReview
+                          ? "Needs Verification"
+                          : diseaseResult.confidence
+                            ? `${diseaseResult.confidence}% Confident`
+                            : "ML Analysis"}
+                      </span>
                     </div>
                     <p className="result-summary">
                       <strong>Crop analyzed:</strong> {diseaseResult.crop} • <strong>Mode:</strong>{" "}
-                      {selectedFile ? "Uploaded image preview" : "Sample image demo"} • <strong>Status:</strong>{" "}
+                      {selectedFile ? "ML model analysis" : "Demo mode"} • <strong>Status:</strong>{" "}
                       {diseaseResult.statusLabel}
                     </p>
                     <div className="result-body">
@@ -552,6 +608,43 @@ function App() {
                         <p>
                           <strong>Severity:</strong> {diseaseResult.severity}
                         </p>
+                        {diseaseResult.topPredictions && diseaseResult.topPredictions.length > 0 && (
+                          <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #e5e5e5" }}>
+                            <p style={{ fontSize: "0.875rem", color: "#666" }}>
+                              <strong>Top Predictions:</strong>
+                            </p>
+                            <p style={{ fontSize: "0.82rem", color: "#666", marginTop: "4px" }}>
+                              Confidence margin (Top1-Top2): {diseaseResult.confidenceMargin}%
+                            </p>
+                            <ul style={{ fontSize: "0.875rem", marginLeft: "12px" }}>
+                              {diseaseResult.topPredictions.map((pred, idx) => (
+                                <li key={idx}>
+                                  {pred.disease.replace(/_/g, " ")} ({pred.confidence.toFixed(2)}%)
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {diseaseResult.needsReview && diseaseResult.uncertaintyReasons?.length > 0 && (
+                          <div
+                            style={{
+                              marginTop: "12px",
+                              padding: "10px",
+                              borderRadius: "12px",
+                              border: "1px solid #f0c36d",
+                              background: "#fff8e8"
+                            }}
+                          >
+                            <p style={{ fontSize: "0.875rem", marginBottom: "6px", color: "#7a4b00" }}>
+                              <strong>Why verification is needed:</strong>
+                            </p>
+                            <ul style={{ marginLeft: "12px", fontSize: "0.85rem", color: "#7a4b00" }}>
+                              {diseaseResult.uncertaintyReasons.map((reason) => (
+                                <li key={reason}>{reason}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                         <p>
                           <strong>Recommendation:</strong> {diseaseResult.advice}
                         </p>
