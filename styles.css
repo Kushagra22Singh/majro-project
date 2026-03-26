@@ -420,6 +420,30 @@ section { padding:5rem 0; }
 
 .panel-heading { margin-bottom:1.25rem; }
 
+.interview-toggle {
+    margin:0.35rem 0 0.75rem;
+    border:1px solid #cfdcc6;
+    background:#f2f7ef;
+    color:var(--primary-deep);
+    font:inherit;
+    font-weight:800;
+    border-radius:999px;
+    padding:0.55rem 0.95rem;
+    cursor:pointer;
+    transition:transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.interview-toggle:hover {
+    transform:translateY(-1px);
+}
+
+.interview-toggle.active {
+    background:linear-gradient(135deg, var(--accent), #de8c35);
+    border-color:transparent;
+    color:#fff;
+    box-shadow:0 12px 24px rgba(200, 112, 47, 0.24);
+}
+
 .demo-title,
 .forecast-title {
     margin:0.4rem 0 0.65rem;
@@ -551,6 +575,11 @@ section { padding:5rem 0; }
     align-items:start;
 }
 
+.result-side {
+    display:grid;
+    gap:0.8rem;
+}
+
 .result-details {
     display:grid;
     gap:0.8rem;
@@ -587,6 +616,28 @@ section { padding:5rem 0; }
     object-fit:cover;
     border-radius:22px;
     box-shadow:0 16px 36px rgba(39, 81, 53, 0.14);
+}
+
+.disease-insight-card {
+    padding:0.85rem 0.9rem;
+    border-radius:16px;
+    background:rgba(255, 255, 255, 0.8);
+    border:1px solid rgba(206, 224, 199, 0.95);
+}
+
+.disease-insight-title {
+    font-weight:800;
+    margin-bottom:0.45rem;
+    color:var(--primary-deep);
+}
+
+.disease-insight-list {
+    margin:0;
+    padding-left:1rem;
+    display:grid;
+    gap:0.38rem;
+    color:var(--text);
+    font-size:0.9rem;
 }
 
 .weather-grid {

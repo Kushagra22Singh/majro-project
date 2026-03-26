@@ -195,6 +195,39 @@ async function getForecast(latitude, longitude, timeZone) {
   return data.daily;
 }
 
+function getDiseaseInsight(result) {
+  if (!result?.isDetected) {
+    return {
+      heading: "Healthy Leaf Guidance",
+      points: [
+        "Keep weekly leaf checks to catch early symptoms before spread.",
+        "Avoid overwatering and improve airflow around the crop canopy.",
+        "Apply preventive bio-fungicide during humid or rainy periods."
+      ]
+    };
+  }
+
+  if (String(result.severity).toLowerCase() === "high") {
+    return {
+      heading: "Priority Treatment Plan",
+      points: [
+        "Isolate visibly infected plants or leaves to reduce cross-field spread.",
+        "Start recommended fungicide protocol immediately and repeat as advised.",
+        "Recheck the field in 48-72 hours and document progression with photos."
+      ]
+    };
+  }
+
+  return {
+    heading: "Suggested Field Actions",
+    points: [
+      "Remove affected leaves and sanitize tools after each row.",
+      "Apply targeted treatment in cool hours for better leaf retention.",
+      "Review nutrient balance to improve natural disease resistance."
+    ]
+  };
+}
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [crop, setCrop] = useState("Rice");
@@ -205,6 +238,7 @@ function App() {
   const [weatherCards, setWeatherCards] = useState([]);
   const [weatherMetaInfo, setWeatherMetaInfo] = useState("Live forecast powered by Open-Meteo.");
   const [weatherStatus, setWeatherStatus] = useState(null);
+  const [isInterviewMode, setIsInterviewMode] = useState(false);
   const [demoUploadStep, setDemoUploadStep] = useState(1);
 
   const previewUrl = useMemo(() => {
@@ -226,16 +260,18 @@ function App() {
     event.preventDefault();
 
     const possible = diseases.filter((disease) => disease.crop.includes(crop));
-    const diseaseForCrop = (possible.length ? possible : diseases)[0];
+    const randomPool = possible.length ? possible : diseases;
+    const diseaseForCrop = randomPool[0];
     const imageSource = previewUrl || diseaseImgs[Math.floor(Math.random() * diseaseImgs.length)];
 
-    const fileName = selectedFile?.name.toLowerCase() || "";
-    const firstImagePattern = /(first|image[\s_-]*1|img[\s_-]*1|sample[\s_-]*1)/;
-    const secondImagePattern = /(second|image[\s_-]*2|img[\s_-]*2|sample[\s_-]*2)/;
+    let shouldDetectDisease = true;
+    let resultPayload;
 
-    let shouldDetectDisease = false;
+    if (isInterviewMode) {
+      const fileName = selectedFile?.name.toLowerCase() || "";
+      const firstImagePattern = /(first|image[\s_-]*1|img[\s_-]*1|sample[\s_-]*1)/;
+      const secondImagePattern = /(second|image[\s_-]*2|img[\s_-]*2|sample[\s_-]*2)/;
 
-    if (selectedFile) {
       if (firstImagePattern.test(fileName)) {
         shouldDetectDisease = false;
       } else if (secondImagePattern.test(fileName)) {
@@ -245,21 +281,27 @@ function App() {
       }
 
       setDemoUploadStep((prev) => prev + 1);
-    }
 
-    const resultPayload = shouldDetectDisease
-      ? {
-          ...diseaseForCrop,
-          statusLabel: "Disease detected"
-        }
-      : {
-          name: "No disease detected",
-          desc: "Leaf appears healthy in this demo pass. No visible disease signature was identified.",
-          severity: "None",
-          advice: "Continue regular monitoring, balanced irrigation, and preventive care.",
-          crop: [crop],
-          statusLabel: "Disease not detected"
-        };
+      resultPayload = shouldDetectDisease
+        ? {
+            ...diseaseForCrop,
+            statusLabel: "Disease detected"
+          }
+        : {
+            name: "No disease detected",
+            desc: "Leaf appears healthy in this demo pass. No visible disease signature was identified.",
+            severity: "None",
+            advice: "Continue regular monitoring, balanced irrigation, and preventive care.",
+            crop: [crop],
+            statusLabel: "Disease not detected"
+          };
+    } else {
+      const randDisease = randomPool[Math.floor(Math.random() * randomPool.length)];
+      resultPayload = {
+        ...randDisease,
+        statusLabel: "Disease detected"
+      };
+    }
 
     setDiseaseResult({
       ...resultPayload,
@@ -439,6 +481,17 @@ function App() {
                   <h3 className="demo-title" id="detection-heading">
                     Detect Crop Disease
                   </h3>
+                  <button
+                    type="button"
+                    className={`interview-toggle${isInterviewMode ? " active" : ""}`}
+                    onClick={() => {
+                      setIsInterviewMode((prev) => !prev);
+                      setDemoUploadStep(1);
+                      setDiseaseResult(null);
+                    }}
+                  >
+                    Interview Mode: {isInterviewMode ? "ON" : "OFF"}
+                  </button>
                   <p className="panel-copy">
                     Simulate a farmer uploading a leaf image and receiving a clear diagnosis card with crop context and
                     next-step advice.
@@ -472,9 +525,6 @@ function App() {
                     <p className="form-hint">
                       Demo mode only. If you skip upload, Leaflens will use a sample disease image.
                     </p>
-                    <p className="form-hint">
-                      Interview demo mode: first uploaded image shows no disease, second uploaded image shows disease.
-                    </p>
                     <p className="upload-status">{uploadStatus}</p>
                   </div>
                   <div className="form-group">
@@ -483,7 +533,7 @@ function App() {
                 </form>
 
                 {diseaseResult && (
-                  <div className="result-card" data-severity={diseaseResult.severity.toLowerCase()}>
+                  <div className="result-card" data-severity={diseaseResult.severity.toLowerCase()} style={{ display: "block" }}>
                     <div className="result-header">
                       <div>
                         <p className="result-label">Detection Result</p>
@@ -506,12 +556,22 @@ function App() {
                           <strong>Recommendation:</strong> {diseaseResult.advice}
                         </p>
                       </div>
-                      <img
-                        className="disease-img"
-                        src={diseaseResult.imageSource}
-                        alt={diseaseResult.imageAlt}
-                        style={{ display: "block" }}
-                      />
+                      <div className="result-side">
+                        <img
+                          className="disease-img"
+                          src={diseaseResult.imageSource}
+                          alt={diseaseResult.imageAlt}
+                          style={{ display: "block" }}
+                        />
+                        <div className="disease-insight-card">
+                          <p className="disease-insight-title">{getDiseaseInsight(diseaseResult).heading}</p>
+                          <ul className="disease-insight-list">
+                            {getDiseaseInsight(diseaseResult).points.map((point) => (
+                              <li key={point}>{point}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
