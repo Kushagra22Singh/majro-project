@@ -559,6 +559,8 @@ section { padding:5rem 0; }
     border:1px solid #cee0c7;
     display:none;
     min-width:0;
+    overflow:hidden;
+    isolation:isolate;
 }
 
 .result-header {
@@ -598,20 +600,29 @@ section { padding:5rem 0; }
 }
 
 .result-body {
-    display:grid;
-    grid-template-columns:1fr;
+    display:flex;
+    flex-direction:column;
     gap:1rem;
     align-items:start;
+    min-width:0;
 }
 
 .result-side {
     display:grid;
     gap:0.8rem;
+    width:100%;
+    min-width:0;
+    position:relative;
+    z-index:1;
 }
 
 .result-details {
     display:grid;
     gap:0.8rem;
+    width:100%;
+    min-width:0;
+    position:relative;
+    z-index:1;
 }
 
 .result-details p {
@@ -644,6 +655,7 @@ section { padding:5rem 0; }
     width:100%;
     aspect-ratio:4 / 3;
     object-fit:cover;
+    max-height:300px;
     border-radius:22px;
     box-shadow:0 16px 36px rgba(39, 81, 53, 0.14);
 }
@@ -653,6 +665,8 @@ section { padding:5rem 0; }
     border-radius:16px;
     background:rgba(255, 255, 255, 0.8);
     border:1px solid rgba(206, 224, 199, 0.95);
+    width:100%;
+    min-width:0;
 }
 
 .disease-insight-title {
@@ -857,6 +871,17 @@ section { padding:5rem 0; }
 .tool-panel li,
 .service-card p {
     overflow-wrap:anywhere;
+}
+
+/* Keep disease result blocks in strict document flow to avoid visual overlap. */
+.result-card .result-body,
+.result-card .result-side,
+.result-card .result-details,
+.result-card .disease-img,
+.result-card .disease-insight-card {
+    position:static;
+    float:none;
+    clear:both;
 }
 
 .soil-tone-low {
