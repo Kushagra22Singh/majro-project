@@ -228,6 +228,95 @@ function getDiseaseInsight(result) {
   };
 }
 
+function getSoilBandTone(fertilityBand) {
+  const band = String(fertilityBand || "").toLowerCase();
+  if (band === "high") {
+    return "high";
+  }
+  if (band === "moderate") {
+    return "moderate";
+  }
+  return "low";
+}
+
+function classifyLevel(value, low, high) {
+  if (value < low) {
+    return "low";
+  }
+  if (value > high) {
+    return "high";
+  }
+  return "optimal";
+}
+
+function buildClientSoilAnalysis(rawInputs) {
+  const ph = Number(rawInputs.ph || 0);
+  const nitrogen = Number(rawInputs.nitrogen || 0);
+  const phosphorus = Number(rawInputs.phosphorus || 0);
+  const potassium = Number(rawInputs.potassium || 0);
+  const moisture = Number(rawInputs.moisture || 0);
+  const organicCarbon = Number(rawInputs.organicCarbon || 0);
+  const temperature = Number(rawInputs.temperature || 0);
+  const rainfall = Number(rawInputs.rainfall || 0);
+
+  const levels = {
+    nitrogen: classifyLevel(nitrogen, 40, 120),
+    phosphorus: classifyLevel(phosphorus, 20, 60),
+    potassium: classifyLevel(potassium, 80, 220),
+    organicCarbon: classifyLevel(organicCarbon, 0.7, 1.5)
+  };
+
+  let fertilityScore = 100;
+  if (ph < 6 || ph > 7.8) fertilityScore -= 10;
+  if (levels.nitrogen !== "optimal") fertilityScore -= 8;
+  if (levels.phosphorus !== "optimal") fertilityScore -= 8;
+  if (levels.potassium !== "optimal") fertilityScore -= 8;
+  if (levels.organicCarbon === "low") fertilityScore -= 10;
+  if (moisture < 30 || moisture > 75) fertilityScore -= 8;
+  if (temperature > 35 || temperature < 12) fertilityScore -= 5;
+  if (rainfall > 180) fertilityScore -= 4;
+
+  fertilityScore = Math.max(20, Math.min(98, Number(fertilityScore.toFixed(1))));
+
+  const fertilityBand = fertilityScore >= 80 ? "High" : fertilityScore >= 60 ? "Moderate" : "Low";
+  const waterRisk = moisture < 30 ? "Drought Stress" : moisture > 75 || rainfall > 140 ? "Waterlogging Risk" : "Low";
+  const lowCount = Object.values(levels).filter((item) => item === "low").length;
+  const highCount = Object.values(levels).filter((item) => item === "high").length;
+  const nutrientRisk = lowCount >= 2 ? "Nutrient Deficiency Risk" : highCount >= 2 ? "Nutrient Excess Risk" : "Balanced";
+
+  const recommendations = [];
+  if (ph < 6) recommendations.push("Apply lime gradually to correct acidic pH.");
+  if (ph > 7.8) recommendations.push("Use gypsum and organic matter to improve alkaline soil availability.");
+  if (levels.nitrogen === "low") recommendations.push("Increase nitrogen in split applications based on crop stage.");
+  if (levels.phosphorus === "low") recommendations.push("Apply phosphorus near root zone for better early uptake.");
+  if (levels.potassium === "low") recommendations.push("Supplement potash to improve stress tolerance and plant strength.");
+  if (levels.organicCarbon === "low") recommendations.push("Add compost or FYM to improve soil carbon and structure.");
+  if (waterRisk === "Drought Stress") recommendations.push("Use mulching and shorter irrigation intervals to reduce water stress.");
+  if (waterRisk === "Waterlogging Risk") recommendations.push("Improve drainage before heavy rain and avoid fertilizer loss.");
+  if (!recommendations.length) recommendations.push("Soil is relatively stable; maintain schedule and retest after 45-60 days.");
+
+  return {
+    crop: rawInputs.crop || "General Crop",
+    fertility_score: fertilityScore,
+    fertility_band: fertilityBand,
+    water_risk: waterRisk,
+    nutrient_risk: nutrientRisk,
+    yield_outlook:
+      fertilityScore >= 75
+        ? "Good yield potential if disease and weather are managed well."
+        : fertilityScore >= 60
+          ? "Moderate yield potential; targeted nutrient corrections can improve output."
+          : "Yield is at risk without immediate nutrient and water management adjustments.",
+    major_insights: [
+      `Estimated soil fertility index: ${fertilityScore}/100 (${fertilityBand}).`,
+      `Primary nutrient status: N=${levels.nitrogen}, P=${levels.phosphorus}, K=${levels.potassium}.`,
+      `Water condition: ${waterRisk} based on moisture ${moisture}% and rainfall ${rainfall} mm.`,
+      `Organic carbon is ${levels.organicCarbon} at ${organicCarbon}% impacting soil structure and microbial activity.`
+    ],
+    recommendations
+  };
+}
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [crop, setCrop] = useState("Tomato");
@@ -238,6 +327,19 @@ function App() {
   const [weatherCards, setWeatherCards] = useState([]);
   const [weatherMetaInfo, setWeatherMetaInfo] = useState("Live forecast powered by Open-Meteo.");
   const [weatherStatus, setWeatherStatus] = useState(null);
+  const [soilInputs, setSoilInputs] = useState({
+    crop: "Tomato",
+    ph: "6.7",
+    nitrogen: "90",
+    phosphorus: "42",
+    potassium: "160",
+    moisture: "48",
+    organicCarbon: "1.1",
+    temperature: "29",
+    rainfall: "65"
+  });
+  const [soilStatus, setSoilStatus] = useState(null);
+  const [soilResult, setSoilResult] = useState(null);
   const [isInterviewMode, setIsInterviewMode] = useState(false);
   const [demoUploadStep, setDemoUploadStep] = useState(1);
 
@@ -401,6 +503,45 @@ function App() {
     }
   };
 
+  const handleSoilInputChange = (event) => {
+    const { name, value } = event.target;
+    setSoilInputs((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSoilSubmit = async (event) => {
+    event.preventDefault();
+    setSoilStatus({ type: "loading", message: "Analyzing soil profile and generating key insights..." });
+
+    try {
+      const response = await fetch("http://localhost:5000/analyze-soil", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(soilInputs)
+      });
+
+      const payload = await response.json();
+      if (!response.ok || payload.error) {
+        throw new Error(payload.error || "Soil analysis failed. Check API status on port 5000.");
+      }
+
+      setSoilResult(payload.analysis);
+      setSoilStatus(null);
+    } catch (error) {
+      // Fallback keeps the feature usable on static hosting (e.g., GitHub Pages).
+      setSoilResult(buildClientSoilAnalysis(soilInputs));
+      const message = error instanceof Error ? error.message : "Unable to analyze soil profile right now.";
+      setSoilStatus({
+        type: "loading",
+        message: `Backend unavailable (${message}). Showing built-in website analysis.`
+      });
+    }
+  };
+
   return (
     <>
       <header className="site-header">
@@ -417,6 +558,11 @@ function App() {
             <li>
               <a href="#services" onClick={() => setMenuOpen(false)}>
                 Services
+              </a>
+            </li>
+            <li>
+              <a href="#soil-tool" onClick={() => setMenuOpen(false)}>
+                Soil
               </a>
             </li>
             <li>
@@ -458,12 +604,13 @@ function App() {
                 <span>6 crop profiles</span>
                 <span>Disease result cards</span>
                 <span>3-day forecast panel</span>
+                <span>Soil insight dashboard</span>
               </div>
             </div>
             <aside className="hero-panel">
               <div className="hero-panel-card">
                 <p className="panel-label">Field Snapshot</p>
-                <h2>One screen for the two checks farmers make most often.</h2>
+                <h2>One screen for three high-impact farm checks.</h2>
                 <div className="snapshot-list">
                   <div className="snapshot-item">
                     <span className="snapshot-value">01</span>
@@ -482,8 +629,8 @@ function App() {
                   <div className="snapshot-item">
                     <span className="snapshot-value">03</span>
                     <div>
-                      <h3>Field-ready layout</h3>
-                      <p>Large touch targets and short summaries keep the interface usable on phones.</p>
+                      <h3>Soil intelligence</h3>
+                      <p>Input soil values and get major fertility, water, and nutrient risk insights instantly.</p>
                     </div>
                   </div>
                 </div>
@@ -496,10 +643,10 @@ function App() {
           <div className="container">
             <div className="section-heading">
               <p className="section-label">Platform</p>
-              <h2 className="section-title">Built around the two screens growers reach for first</h2>
+              <h2 className="section-title">Built around the three checks growers reach for first</h2>
               <p className="section-copy">
                 This version is still a frontend demo, but the interface now feels closer to a real product with
-                clearer hierarchy, stronger form panels, and easier-to-scan outputs.
+                disease, weather, and soil workflows designed for fast field decisions.
               </p>
             </div>
 
@@ -518,6 +665,15 @@ function App() {
                 <p className="service-tag">Weather Planning</p>
                 <h3>Field-ready forecast panel</h3>
                 <p>Summarize temperature, rainfall probability, and a short recommendation for the next three days.</p>
+              </article>
+              <article className="service-card">
+                <div className="service-icon">🧪</div>
+                <p className="service-tag">Soil Analysis</p>
+                <h3>Data-driven soil insights</h3>
+                <p>
+                  Analyze pH, NPK, moisture, organic carbon, and climate values to get fertility score and major
+                  corrective actions.
+                </p>
               </article>
             </div>
 
@@ -726,6 +882,181 @@ function App() {
                           </p>
                         </div>
                       ))}
+                  </div>
+                )}
+              </section>
+
+              <section id="soil-tool" className="tool-panel" aria-labelledby="soil-heading">
+                <div className="panel-heading">
+                  <p className="panel-label">Demo 03</p>
+                  <h3 className="forecast-title" id="soil-heading">
+                    Soil Analysis and Major Insights
+                  </h3>
+                  <p className="panel-copy">
+                    Enter your soil and field data to estimate fertility level, identify key risks, and get practical
+                    recommendations for the next field cycle.
+                  </p>
+                </div>
+
+                <form className="soil-form" onSubmit={handleSoilSubmit}>
+                  <div className="soil-grid-inputs">
+                    <div className="form-group">
+                      <label htmlFor="soil-crop">Crop</label>
+                      <input
+                        id="soil-crop"
+                        name="crop"
+                        type="text"
+                        value={soilInputs.crop}
+                        onChange={handleSoilInputChange}
+                        placeholder="Tomato"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="soil-ph">pH</label>
+                      <input
+                        id="soil-ph"
+                        name="ph"
+                        type="number"
+                        step="0.1"
+                        min="3"
+                        max="10"
+                        value={soilInputs.ph}
+                        onChange={handleSoilInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="soil-n">Nitrogen (mg/kg)</label>
+                      <input
+                        id="soil-n"
+                        name="nitrogen"
+                        type="number"
+                        step="0.1"
+                        value={soilInputs.nitrogen}
+                        onChange={handleSoilInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="soil-p">Phosphorus (mg/kg)</label>
+                      <input
+                        id="soil-p"
+                        name="phosphorus"
+                        type="number"
+                        step="0.1"
+                        value={soilInputs.phosphorus}
+                        onChange={handleSoilInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="soil-k">Potassium (mg/kg)</label>
+                      <input
+                        id="soil-k"
+                        name="potassium"
+                        type="number"
+                        step="0.1"
+                        value={soilInputs.potassium}
+                        onChange={handleSoilInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="soil-moisture">Moisture (%)</label>
+                      <input
+                        id="soil-moisture"
+                        name="moisture"
+                        type="number"
+                        step="0.1"
+                        value={soilInputs.moisture}
+                        onChange={handleSoilInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="soil-carbon">Organic Carbon (%)</label>
+                      <input
+                        id="soil-carbon"
+                        name="organicCarbon"
+                        type="number"
+                        step="0.01"
+                        value={soilInputs.organicCarbon}
+                        onChange={handleSoilInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="soil-temp">Soil Temp (C)</label>
+                      <input
+                        id="soil-temp"
+                        name="temperature"
+                        type="number"
+                        step="0.1"
+                        value={soilInputs.temperature}
+                        onChange={handleSoilInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="soil-rain">Rainfall (mm, recent)</label>
+                      <input
+                        id="soil-rain"
+                        name="rainfall"
+                        type="number"
+                        step="0.1"
+                        value={soilInputs.rainfall}
+                        onChange={handleSoilInputChange}
+                      />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <button type="submit">Analyze Soil Data</button>
+                  </div>
+                </form>
+
+                {soilStatus && (
+                  <div className={`weather-status weather-status-${soilStatus.type}`} style={{ marginTop: "20px" }}>
+                    {soilStatus.message}
+                  </div>
+                )}
+
+                {soilResult && (
+                  <div className={`soil-result-card soil-tone-${getSoilBandTone(soilResult.fertility_band)}`}>
+                    <div className="soil-result-top">
+                      <div>
+                        <p className="result-label">Soil Insight Report</p>
+                        <h4>{soilResult.crop}</h4>
+                      </div>
+                      <span className="soil-score-pill">{soilResult.fertility_score}/100</span>
+                    </div>
+
+                    <div className="soil-kpi-row">
+                      <p>
+                        <strong>Fertility Band:</strong> {soilResult.fertility_band}
+                      </p>
+                      <p>
+                        <strong>Water Risk:</strong> {soilResult.water_risk}
+                      </p>
+                      <p>
+                        <strong>Nutrient Risk:</strong> {soilResult.nutrient_risk}
+                      </p>
+                    </div>
+
+                    <p className="soil-yield-note">
+                      <strong>Yield Outlook:</strong> {soilResult.yield_outlook}
+                    </p>
+
+                    <div className="soil-columns">
+                      <div>
+                        <p className="soil-block-title">Major Insights</p>
+                        <ul className="soil-list">
+                          {soilResult.major_insights.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="soil-block-title">Key Recommendations</p>
+                        <ul className="soil-list">
+                          {soilResult.recommendations.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 )}
               </section>

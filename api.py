@@ -142,6 +142,173 @@ def assess_image_quality(image_rgb):
         'warnings': warnings
     }
 
+
+def _to_float(payload, key, default=None):
+    value = payload.get(key, default)
+    if value is None:
+        raise ValueError(f"Missing required field: {key}")
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"Invalid numeric value for {key}")
+
+
+def _soil_level(value, low, high):
+    if value < low:
+        return "low"
+    if value > high:
+        return "high"
+    return "optimal"
+
+
+def analyze_soil_profile(payload):
+    # Required soil metrics (typical units used by field kits/lab reports).
+    ph = _to_float(payload, 'ph')
+    nitrogen = _to_float(payload, 'nitrogen')
+    phosphorus = _to_float(payload, 'phosphorus')
+    potassium = _to_float(payload, 'potassium')
+    moisture = _to_float(payload, 'moisture')
+    organic_carbon = _to_float(payload, 'organicCarbon')
+    temperature = _to_float(payload, 'temperature')
+    rainfall = _to_float(payload, 'rainfall', 0)
+    crop_name = str(payload.get('crop', 'General Crop')).strip() or 'General Crop'
+
+    if not (3.0 <= ph <= 10.0):
+        raise ValueError('pH must be between 3.0 and 10.0')
+
+    nutrient_levels = {
+        'nitrogen': _soil_level(nitrogen, 40, 120),
+        'phosphorus': _soil_level(phosphorus, 20, 60),
+        'potassium': _soil_level(potassium, 80, 220),
+        'organicCarbon': _soil_level(organic_carbon, 0.7, 1.5)
+    }
+
+    # Fertility index: weighted score focused on NPK + carbon and pH stability.
+    fertility_score = 100.0
+    penalties = []
+
+    if ph < 6.0:
+        penalties.append((12, 'Acidic soil may reduce nutrient uptake.'))
+    elif ph > 7.8:
+        penalties.append((10, 'Alkaline pH can lock phosphorus and micronutrients.'))
+
+    if nutrient_levels['nitrogen'] == 'low':
+        penalties.append((16, 'Nitrogen is low, reducing vegetative growth potential.'))
+    elif nutrient_levels['nitrogen'] == 'high':
+        penalties.append((6, 'Nitrogen is high; monitor excess foliage and pest pressure.'))
+
+    if nutrient_levels['phosphorus'] == 'low':
+        penalties.append((14, 'Phosphorus is low, affecting root development and flowering.'))
+    elif nutrient_levels['phosphorus'] == 'high':
+        penalties.append((6, 'Phosphorus is high; avoid unnecessary DAP applications.'))
+
+    if nutrient_levels['potassium'] == 'low':
+        penalties.append((12, 'Potassium is low, increasing stress and lodging risk.'))
+    elif nutrient_levels['potassium'] == 'high':
+        penalties.append((5, 'Potassium is high; rebalance future fertilizer schedule.'))
+
+    if nutrient_levels['organicCarbon'] == 'low':
+        penalties.append((11, 'Low organic carbon indicates poor soil structure and biology.'))
+
+    if moisture < 30:
+        penalties.append((12, 'Soil moisture is low and may limit nutrient availability.'))
+    elif moisture > 75:
+        penalties.append((9, 'Soil moisture is high and can increase root disease risk.'))
+
+    if temperature > 35:
+        penalties.append((7, 'High soil temperature can stress roots and microbial activity.'))
+    elif temperature < 12:
+        penalties.append((5, 'Low soil temperature can slow nutrient mineralization.'))
+
+    if rainfall > 180:
+        penalties.append((6, 'Very high rainfall may cause nutrient leaching.'))
+
+    total_penalty = sum(p[0] for p in penalties)
+    fertility_score = max(18.0, min(99.0, fertility_score - total_penalty))
+
+    if fertility_score >= 80:
+        fertility_band = 'High'
+    elif fertility_score >= 60:
+        fertility_band = 'Moderate'
+    else:
+        fertility_band = 'Low'
+
+    water_risk = 'Low'
+    if moisture < 30:
+        water_risk = 'Drought Stress'
+    elif moisture > 75 or rainfall > 140:
+        water_risk = 'Waterlogging Risk'
+
+    nutrient_risk = 'Balanced'
+    if list(nutrient_levels.values()).count('low') >= 2:
+        nutrient_risk = 'Nutrient Deficiency Risk'
+    elif list(nutrient_levels.values()).count('high') >= 2:
+        nutrient_risk = 'Nutrient Excess Risk'
+
+    insights = [
+        f"Estimated soil fertility index: {fertility_score:.1f}/100 ({fertility_band}).",
+        f"Primary nutrient status: N={nutrient_levels['nitrogen']}, P={nutrient_levels['phosphorus']}, K={nutrient_levels['potassium']}.",
+        f"Water condition: {water_risk} based on moisture {moisture:.1f}% and rainfall {rainfall:.1f} mm.",
+        f"Organic carbon is {nutrient_levels['organicCarbon']} at {organic_carbon:.2f}% affecting soil structure and microbial health."
+    ]
+
+    major_drivers = [p[1] for p in penalties[:4]]
+    if not major_drivers:
+        major_drivers.append('Soil parameters are within a stable operational range.')
+
+    recommendations = []
+    if ph < 6.0:
+        recommendations.append('Apply agricultural lime in split doses to gradually raise pH.')
+    elif ph > 7.8:
+        recommendations.append('Use gypsum and organic amendments to improve nutrient availability in alkaline soil.')
+
+    if nutrient_levels['nitrogen'] == 'low':
+        recommendations.append('Increase nitrogen through urea in split applications or composted manure.')
+    if nutrient_levels['phosphorus'] == 'low':
+        recommendations.append('Band-apply phosphorus fertilizer near root zone for better early uptake.')
+    if nutrient_levels['potassium'] == 'low':
+        recommendations.append('Supplement muriate of potash and monitor tissue potassium during growth stages.')
+    if nutrient_levels['organicCarbon'] == 'low':
+        recommendations.append('Incorporate FYM/compost and crop residue to lift soil organic carbon over time.')
+
+    if water_risk == 'Drought Stress':
+        recommendations.append('Schedule irrigation in smaller, more frequent cycles and add mulch to reduce evaporation.')
+    elif water_risk == 'Waterlogging Risk':
+        recommendations.append('Open drainage channels and avoid fertilizer application before heavy rainfall events.')
+
+    if not recommendations:
+        recommendations.append('Maintain current nutrient plan and repeat soil testing after 45-60 days for trend tracking.')
+
+    if fertility_score >= 75:
+        yield_outlook = 'Good yield potential if disease and weather are managed well.'
+    elif fertility_score >= 60:
+        yield_outlook = 'Moderate yield potential; targeted nutrient corrections can improve output.'
+    else:
+        yield_outlook = 'Yield is at risk without immediate nutrient and water management adjustments.'
+
+    return {
+        'crop': crop_name,
+        'fertility_score': round(fertility_score, 1),
+        'fertility_band': fertility_band,
+        'water_risk': water_risk,
+        'nutrient_risk': nutrient_risk,
+        'yield_outlook': yield_outlook,
+        'input_summary': {
+            'ph': ph,
+            'nitrogen': nitrogen,
+            'phosphorus': phosphorus,
+            'potassium': potassium,
+            'moisture': moisture,
+            'organicCarbon': organic_carbon,
+            'temperature': temperature,
+            'rainfall': rainfall
+        },
+        'levels': nutrient_levels,
+        'major_insights': insights,
+        'major_drivers': major_drivers,
+        'recommendations': recommendations
+    }
+
 # ===== Initialize Flask App =====
 app = Flask(__name__)
 CORS(app)
@@ -242,6 +409,18 @@ def predict():
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({'status': 'API is running', 'model_classes': len(DISEASE_CLASSES)})
+
+
+@app.route('/analyze-soil', methods=['POST'])
+def analyze_soil():
+    try:
+        payload = request.get_json(silent=True) or {}
+        analysis = analyze_soil_profile(payload)
+        return jsonify({'success': True, 'analysis': analysis})
+    except ValueError as error:
+        return jsonify({'error': str(error)}), 400
+    except Exception as error:
+        return jsonify({'error': f'Failed to analyze soil data: {error}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

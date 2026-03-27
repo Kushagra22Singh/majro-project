@@ -347,7 +347,7 @@ section { padding:5rem 0; }
 
 .services-grid {
     display:grid;
-    grid-template-columns:repeat(2, minmax(0, 1fr));
+    grid-template-columns:repeat(3, minmax(0, 1fr));
     gap:1.4rem;
 }
 
@@ -405,7 +405,7 @@ section { padding:5rem 0; }
 
 .demo-grid {
     display:grid;
-    grid-template-columns:repeat(2, minmax(0, 1fr));
+    grid-template-columns:repeat(3, minmax(0, 1fr));
     gap:1.5rem;
     margin-top:2rem;
 }
@@ -453,7 +453,8 @@ section { padding:5rem 0; }
 }
 
 .detection-form,
-.weather-form {
+.weather-form,
+.soil-form {
     background:transparent;
     border:1px dashed var(--line);
     padding:1.2rem;
@@ -463,6 +464,16 @@ section { padding:5rem 0; }
     margin:0;
 }
 
+.soil-grid-inputs {
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:0.95rem;
+    margin-bottom:1rem;
+}
+
+.soil-grid-inputs .form-group {
+    margin-bottom:0;
+}
 .weather-source {
     margin:0.9rem 0 0;
     color:var(--muted);
@@ -737,6 +748,102 @@ section { padding:5rem 0; }
     color:#7b2f22;
 }
 
+.soil-result-card {
+    margin-top:1.25rem;
+    border-radius:24px;
+    border:1px solid #d0e5cb;
+    background:linear-gradient(180deg, #f6fcf2, #eaf7e4);
+    padding:1.2rem;
+}
+
+.soil-result-top {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:0.75rem;
+}
+
+.soil-result-top h4 {
+    margin-top:0.28rem;
+    font-family:"Space Grotesk", sans-serif;
+    font-size:1.35rem;
+}
+
+.soil-score-pill {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:92px;
+    padding:0.52rem 0.85rem;
+    border-radius:999px;
+    font-size:0.88rem;
+    font-weight:800;
+    background:#dbefcf;
+    color:#275238;
+}
+
+.soil-kpi-row {
+    margin-top:0.9rem;
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:0.65rem;
+}
+
+.soil-kpi-row p,
+.soil-yield-note {
+    padding:0.75rem 0.85rem;
+    border-radius:14px;
+    background:rgba(255, 255, 255, 0.75);
+    border:1px solid rgba(208, 229, 203, 0.96);
+    font-size:0.9rem;
+}
+
+.soil-yield-note {
+    margin-top:0.8rem;
+}
+
+.soil-columns {
+    margin-top:0.85rem;
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:0.8rem;
+}
+
+.soil-block-title {
+    font-size:0.92rem;
+    font-weight:800;
+    color:var(--primary-deep);
+    margin-bottom:0.45rem;
+}
+
+.soil-list {
+    margin:0;
+    padding-left:1rem;
+    display:grid;
+    gap:0.4rem;
+    font-size:0.89rem;
+}
+
+.soil-tone-low {
+    border-color:#f0c7bc;
+    background:linear-gradient(180deg, #fff7f3, #ffe9e2);
+}
+
+.soil-tone-low .soil-score-pill {
+    background:#f6d0c6;
+    color:#7b2f22;
+}
+
+.soil-tone-moderate {
+    border-color:#ecd99e;
+    background:linear-gradient(180deg, #fffaf0, #f8f0dc);
+}
+
+.soil-tone-moderate .soil-score-pill {
+    background:#f5e6ba;
+    color:#735420;
+}
+
 .about-section {
     padding-top:0.75rem;
 }
@@ -910,6 +1017,12 @@ footer {
 @media (max-width: 560px) {
     .container {
         width:min(100% - 1rem, 1180px);
+    }
+
+    .soil-kpi-row,
+    .soil-columns,
+    .soil-grid-inputs {
+        grid-template-columns:1fr;
     }
 
     .hero-copy,
