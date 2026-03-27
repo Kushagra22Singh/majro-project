@@ -383,6 +383,7 @@ function App() {
   const handleDiseaseSubmit = (event) => {
     event.preventDefault();
     setDetectionStatus({ type: "loading", message: "Analyzing image with ML model..." });
+    setDiseaseResult(null);
 
     if (!selectedFile) {
       setDetectionStatus({ type: "error", message: "Please upload an image first." });
@@ -407,6 +408,7 @@ function App() {
       })
       .then((data) => {
         if (data.error) {
+          setDiseaseResult(null);
           setDetectionStatus({ type: "error", message: data.error });
           return;
         }
@@ -460,6 +462,7 @@ function App() {
       })
       .catch((error) => {
         const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+        setDiseaseResult(null);
         setDetectionStatus({ type: "error", message: errorMessage });
       });
   };
