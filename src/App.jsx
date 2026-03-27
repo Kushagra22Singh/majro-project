@@ -269,17 +269,54 @@ function buildClientSoilAnalysis(rawInputs) {
     organicCarbon: classifyLevel(organicCarbon, 0.7, 1.5)
   };
 
-  let fertilityScore = 100;
-  if (ph < 6 || ph > 7.8) fertilityScore -= 10;
-  if (levels.nitrogen !== "optimal") fertilityScore -= 8;
-  if (levels.phosphorus !== "optimal") fertilityScore -= 8;
-  if (levels.potassium !== "optimal") fertilityScore -= 8;
-  if (levels.organicCarbon === "low") fertilityScore -= 10;
-  if (moisture < 30 || moisture > 75) fertilityScore -= 8;
-  if (temperature > 35 || temperature < 12) fertilityScore -= 5;
-  if (rainfall > 180) fertilityScore -= 4;
+  const penalties = [];
 
-  fertilityScore = Math.max(20, Math.min(98, Number(fertilityScore.toFixed(1))));
+  if (ph < 6.0) {
+    penalties.push([12, "Acidic soil may reduce nutrient uptake."]);
+  } else if (ph > 7.8) {
+    penalties.push([10, "Alkaline pH can lock phosphorus and micronutrients."]);
+  }
+
+  if (levels.nitrogen === "low") {
+    penalties.push([16, "Nitrogen is low, reducing vegetative growth potential."]);
+  } else if (levels.nitrogen === "high") {
+    penalties.push([6, "Nitrogen is high; monitor excess foliage and pest pressure."]);
+  }
+
+  if (levels.phosphorus === "low") {
+    penalties.push([14, "Phosphorus is low, affecting root development and flowering."]);
+  } else if (levels.phosphorus === "high") {
+    penalties.push([6, "Phosphorus is high; avoid unnecessary DAP applications."]);
+  }
+
+  if (levels.potassium === "low") {
+    penalties.push([12, "Potassium is low, increasing stress and lodging risk."]);
+  } else if (levels.potassium === "high") {
+    penalties.push([5, "Potassium is high; rebalance future fertilizer schedule."]);
+  }
+
+  if (levels.organicCarbon === "low") {
+    penalties.push([11, "Low organic carbon indicates poor soil structure and biology."]);
+  }
+
+  if (moisture < 30) {
+    penalties.push([12, "Soil moisture is low and may limit nutrient availability."]);
+  } else if (moisture > 75) {
+    penalties.push([9, "Soil moisture is high and can increase root disease risk."]);
+  }
+
+  if (temperature > 35) {
+    penalties.push([7, "High soil temperature can stress roots and microbial activity."]);
+  } else if (temperature < 12) {
+    penalties.push([5, "Low soil temperature can slow nutrient mineralization."]);
+  }
+
+  if (rainfall > 180) {
+    penalties.push([6, "Very high rainfall may cause nutrient leaching."]);
+  }
+
+  const totalPenalty = penalties.reduce((sum, item) => sum + item[0], 0);
+  const fertilityScore = Number(Math.max(18, Math.min(99, 100 - totalPenalty)).toFixed(1));
 
   const fertilityBand = fertilityScore >= 80 ? "High" : fertilityScore >= 60 ? "Moderate" : "Low";
   const waterRisk = moisture < 30 ? "Drought Stress" : moisture > 75 || rainfall > 140 ? "Waterlogging Risk" : "Low";
@@ -297,6 +334,11 @@ function buildClientSoilAnalysis(rawInputs) {
   if (waterRisk === "Drought Stress") recommendations.push("Use mulching and shorter irrigation intervals to reduce water stress.");
   if (waterRisk === "Waterlogging Risk") recommendations.push("Improve drainage before heavy rain and avoid fertilizer loss.");
   if (!recommendations.length) recommendations.push("Soil is relatively stable; maintain schedule and retest after 45-60 days.");
+
+  const majorDrivers = penalties.slice(0, 4).map((item) => item[1]);
+  if (!majorDrivers.length) {
+    majorDrivers.push("Soil parameters are within a stable operational range.");
+  }
 
   return {
     crop: rawInputs.crop || "General Crop",
@@ -316,6 +358,7 @@ function buildClientSoilAnalysis(rawInputs) {
       `Water condition: ${waterRisk} based on moisture ${moisture}% and rainfall ${rainfall} mm.`,
       `Organic carbon is ${levels.organicCarbon} at ${organicCarbon}% impacting soil structure and microbial activity.`
     ],
+    major_drivers: majorDrivers,
     recommendations
   };
 }
