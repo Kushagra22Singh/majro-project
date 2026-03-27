@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import __main__
 import os
 import torch
 import torch.nn as nn
@@ -314,10 +315,22 @@ def analyze_soil_profile(payload):
 app = Flask(__name__)
 CORS(app)
 
+def load_disease_model(model_path):
+    # Legacy checkpoint was serialized from __main__. Expose symbols for gunicorn workers.
+    setattr(__main__, 'ResNet9', ResNet9)
+    setattr(__main__, 'conv_block', conv_block)
+
+    loaded = torch.load(model_path, map_location='cpu', weights_only=False)
+    if isinstance(loaded, nn.Module):
+        loaded.eval()
+        return loaded
+
+    raise RuntimeError('Unsupported model checkpoint format. Expected a serialized nn.Module.')
+
+
 # Load model
 print("Loading model...")
-model = torch.load('plant-disease-model-complete (1).pth', map_location='cpu', weights_only=False)
-model.eval()
+model = load_disease_model('plant-disease-model-complete (1).pth')
 print("✅ Model loaded successfully!")
 
 # Image preprocessing
