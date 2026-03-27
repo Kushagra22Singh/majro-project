@@ -91,6 +91,9 @@ const weatherCodeLabels = {
 
 const geocodeEndpoint = "https://geocoding-api.open-meteo.com/v1/search";
 const forecastEndpoint = "https://api.open-meteo.com/v1/forecast";
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+const isGitHubPagesHost =
+  typeof window !== "undefined" && /github\.io$/i.test(window.location.hostname);
 
 function getWeatherLabel(code) {
   return weatherCodeLabels[code] || "Variable weather";
@@ -515,8 +518,18 @@ function App() {
     event.preventDefault();
     setSoilStatus({ type: "loading", message: "Analyzing soil profile and generating key insights..." });
 
+    // GitHub Pages is static hosting; use built-in analyzer unless an external API URL is configured.
+    if (isGitHubPagesHost && !import.meta.env.VITE_API_BASE_URL) {
+      setSoilResult(buildClientSoilAnalysis(soilInputs));
+      setSoilStatus({
+        type: "info",
+        message: "Built-in website analysis mode is active on GitHub Pages."
+      });
+      return;
+    }
+
     try {
-      const response = await fetch("http://localhost:5000/analyze-soil", {
+      const response = await fetch(`${apiBaseUrl}/analyze-soil`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -532,12 +545,12 @@ function App() {
       setSoilResult(payload.analysis);
       setSoilStatus(null);
     } catch (error) {
-      // Fallback keeps the feature usable on static hosting (e.g., GitHub Pages).
+      // Fallback keeps the feature usable if API is unreachable.
       setSoilResult(buildClientSoilAnalysis(soilInputs));
       const message = error instanceof Error ? error.message : "Unable to analyze soil profile right now.";
       setSoilStatus({
-        type: "loading",
-        message: `Backend unavailable (${message}). Showing built-in website analysis.`
+        type: "info",
+        message: `Live API is currently unreachable (${message}). Showing built-in website analysis.`
       });
     }
   };

@@ -748,6 +748,12 @@ section { padding:5rem 0; }
     color:#7b2f22;
 }
 
+.weather-status-info {
+    background:rgba(236, 244, 252, 0.95);
+    border-color:rgba(102, 151, 193, 0.35);
+    color:#284d69;
+}
+
 .soil-result-card {
     margin-top:1.25rem;
     border-radius:24px;
