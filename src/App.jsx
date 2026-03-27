@@ -394,7 +394,7 @@ function App() {
     formData.append("image", selectedFile);
     formData.append("crop", crop);
 
-    fetch("http://localhost:5000/predict", {
+    fetch(`${apiBaseUrl}/predict`, {
       method: "POST",
       body: formData
     })

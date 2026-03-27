@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import os
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
@@ -423,4 +424,5 @@ def analyze_soil():
         return jsonify({'error': f'Failed to analyze soil data: {error}'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    port = int(os.getenv('PORT', '5000'))
+    app.run(host='0.0.0.0', port=port, debug=False)
