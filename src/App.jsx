@@ -99,6 +99,329 @@ const apiBaseUrl = (
 ).replace(/\/$/, "");
 const hasConfiguredExternalApi = Boolean(import.meta.env.VITE_API_BASE_URL);
 
+const translations = {
+  en: {
+    appName: "Leaflens",
+    home: "Home",
+    services: "Services",
+    soil: "Soil",
+    about: "About",
+    heroKicker: "Precision farming demo for Indian growers",
+    heroTitle: "Spot crop disease faster and plan field work with more confidence.",
+    heroText: "Leaflens brings crop symptom screening and simple weather guidance into one clear mobile-friendly interface so farmers can review what they see in the field and decide what to do next.",
+    tryDemo: "Try Demo",
+    seeProjectScope: "See Project Scope",
+    platform: "Platform",
+    platformTitle: "Built around the three checks growers reach for first",
+    platformCopy: "This version is still a frontend demo, but the interface now feels closer to a real product with disease, weather, and soil workflows designed for fast field decisions.",
+    diseaseDetection: "Disease Detection",
+    leafSymptomScreening: "Leaf symptom screening",
+    leafSymptomDesc: "Guide the user from crop selection to image upload with a focused result card and practical treatment advice.",
+    weatherPlanning: "Weather Planning",
+    fieldReadyForecast: "Field-ready forecast panel",
+    forecastDesc: "Summarize temperature, rainfall probability, and a short recommendation for the next three days.",
+    soilAnalysis: "Soil Analysis",
+    dataDrivernSoil: "Data-driven soil insights",
+    soilDesc: "Analyze pH, NPK, moisture, organic carbon, and climate values to get fertility score and major corrective actions.",
+    demo01: "Demo 01",
+    detectCropDisease: "Detect Crop Disease",
+    interviewMode: "Interview Mode",
+    detectSimulate: "Simulate a farmer uploading a leaf image and receiving a clear diagnosis card with crop context and next-step advice.",
+    selectCrop: "Select Crop",
+    uploadLeafPhoto: "Upload Leaf Photo",
+    analyzeImage: "Analyze Image",
+    cropLimitNote: "Crop list is limited to what your current ML model supports.",
+    noImageSelected: "No image selected yet.",
+    selectedImage: "Selected image",
+    healthCheckMessage: "Checking ML API status...",
+    mlApiHealth: "ML API Health",
+    recheckApi: "Recheck API",
+    checking: "Checking...",
+    online: "Online",
+    wakingUp: "Waking Up",
+    backendReachable: "Backend is reachable and ready for image analysis.",
+    renderWakingUp: "Render backend is waking up. Retry in about 30-60 seconds.",
+    detectionResult: "Detection Result",
+    diseaseNotDetected: "Disease not detected",
+    diseaseDetected: "Disease detected",
+    cropAnalyzed: "Crop analyzed",
+    mode: "Mode",
+    mlModelAnalysis: "ML model analysis",
+    demoMode: "Demo mode",
+    status: "Status",
+    severity: "Severity",
+    recommendation: "Recommendation",
+    topPredictions: "Top Predictions",
+    confidenceMargin: "Confidence margin (Top1-Top2)",
+    whyVerification: "Why verification is needed",
+    demo02: "Demo 02",
+    weatherOutlook: "Weather Outlook",
+    weatherSimulate: "Enter a location name and fetch a quick 3-day farm advisory from live data.",
+    location: "Location",
+    locationHint: "E.g., Delhi, Mumbai, Bangalore",
+    getWeather: "Get Weather",
+    demo03: "Demo 03",
+    soilTool: "Soil Carbon & Fertility Analysis",
+    soilSimulate: "Input soil test values and get major insights on fertility, water stress, and corrective actions.",
+    fertilityScore: "Fertility Score",
+    waterRisk: "Water Risk",
+    nutrientRisk: "Nutrient Risk",
+    yieldOutlook: "Yield Outlook",
+    majorInsights: "Major Insights",
+    majorDrivers: "Major Drivers",
+    recommendations: "Recommendations",
+    section02: "Field Snapshot",
+    section02Title: "One screen for three high-impact farm checks.",
+    leafScanTitle: "Leaf scan demo",
+    weatherTitle: "Weather outlook",
+    soilTitle: "Soil intelligence",
+    leafScanDesc: "Select a crop, upload a leaf image, and review a structured disease summary.",
+    weatherDesc: "Generate a quick three-day forecast card with rainfall and work advice.",
+    soilPanelDesc: "Input soil values and get major fertility, water, and nutrient risk insights instantly.",
+    selectLanguage: "Language"
+  },
+  es: {
+    appName: "Leaflens",
+    home: "Inicio",
+    services: "Servicios",
+    soil: "Suelo",
+    about: "Acerca de",
+    heroKicker: "Demo de agricultura de precisión para agricultores indios",
+    heroTitle: "Detecta enfermedades de cultivos más rápido y planifica el trabajo de campo con más confianza.",
+    heroText: "Leaflens reúne el cribado de síntomas de cultivos y orientación meteorológica simple en una interfaz clara y fácil de usar para móviles para que los agricultores revisen lo que ven en el campo y decidan qué hacer a continuación.",
+    tryDemo: "Prueba Demo",
+    seeProjectScope: "Ver Alcance del Proyecto",
+    platform: "Plataforma",
+    platformTitle: "Construido alrededor de los tres controles que los cultivadores buscan primero",
+    platformCopy: "Esta versión sigue siendo una demostración frontal, pero la interfaz se siente más cercana a un producto real con flujos de trabajo de enfermedades, clima y suelo diseñados para decisiones rápidas en el campo.",
+    diseaseDetection: "Detección de Enfermedades",
+    leafSymptomScreening: "Cribado de síntomas de hojas",
+    leafSymptomDesc: "Guía al usuario desde la selección del cultivo hasta la carga de imagen con una tarjeta de resultado enfocada y consejos de tratamiento prácticos.",
+    weatherPlanning: "Planificación Meteorológica",
+    fieldReadyForecast: "Panel de previsión listo para el campo",
+    forecastDesc: "Resumir temperatura, probabilidad de lluvia y una breve recomendación para los próximos tres días.",
+    soilAnalysis: "Análisis de Suelo",
+    dataDrivernSoil: "Información sobre suelo basada en datos",
+    soilDesc: "Analiza pH, NPK, humedad, carbono orgánico y valores climáticos para obtener puntuación de fertilidad y acciones correctivas principales.",
+    demo01: "Demo 01",
+    detectCropDisease: "Detectar Enfermedad de Cultivos",
+    interviewMode: "Modo Entrevista",
+    detectSimulate: "Simula un agricultor cargando una imagen de hoja y recibiendo una tarjeta de diagnóstico clara con contexto de cultivo y consejos de próximos pasos.",
+    selectCrop: "Seleccionar Cultivo",
+    uploadLeafPhoto: "Cargar Foto de Hoja",
+    analyzeImage: "Analizar Imagen",
+    cropLimitNote: "La lista de cultivos se limita a lo que su modelo ML actual admite.",
+    noImageSelected: "Aún no se ha seleccionado ninguna imagen.",
+    selectedImage: "Imagen seleccionada",
+    healthCheckMessage: "Comprobando estado de ML API...",
+    mlApiHealth: "Salud de API ML",
+    recheckApi: "Recomprobar API",
+    checking: "Comprobando...",
+    online: "En línea",
+    wakingUp: "Despertando",
+    backendReachable: "El backend es accesible y está listo para análisis de imágenes.",
+    renderWakingUp: "El backend de Render se está despertando. Reintentar en unos 30-60 segundos.",
+    detectionResult: "Resultado de Detección",
+    diseaseNotDetected: "Enfermedad no detectada",
+    diseaseDetected: "Enfermedad detectada",
+    cropAnalyzed: "Cultivo analizado",
+    mode: "Modo",
+    mlModelAnalysis: "Análisis de modelo ML",
+    demoMode: "Modo demo",
+    status: "Estado",
+    severity: "Severidad",
+    recommendation: "Recomendación",
+    topPredictions: "Predicciones Principales",
+    confidenceMargin: "Margen de confianza (Top1-Top2)",
+    whyVerification: "Por qué se necesita verificación",
+    demo02: "Demo 02",
+    weatherOutlook: "Perspectiva Meteorológica",
+    weatherSimulate: "Ingrese un nombre de ubicación y obtenga un rápido consejo de granja de 3 días a partir de datos en vivo.",
+    location: "Ubicación",
+    locationHint: "p. ej., Delhi, Mumbai, Bangalore",
+    getWeather: "Obtener Clima",
+    demo03: "Demo 03",
+    soilTool: "Análisis de Carbono y Fertilidad del Suelo",
+    soilSimulate: "Ingrese valores de prueba de suelo y obtenga información importante sobre fertilidad, estrés hídrico y acciones correctivas.",
+    fertilityScore: "Puntuación de Fertilidad",
+    waterRisk: "Riesgo de Agua",
+    nutrientRisk: "Riesgo de Nutrientes",
+    yieldOutlook: "Perspectiva de Rendimiento",
+    majorInsights: "Información Principal",
+    majorDrivers: "Factores Principales",
+    recommendations: "Recomendaciones",
+    section02: "Snapshot de Campo",
+    section02Title: "Una pantalla para tres controles de granja de alto impacto.",
+    leafScanTitle: "Demo de escaneo de hojas",
+    weatherTitle: "Perspectiva meteorológica",
+    soilTitle: "Inteligencia del suelo",
+    leafScanDesc: "Seleccione un cultivo, cargue una imagen de hoja y revise un resumen de enfermedad estructurado.",
+    weatherDesc: "Genere una tarjeta de previsión de 3 días con lluvia y consejos de trabajo.",
+    soilPanelDesc: "Ingrese valores de suelo y obtenga información instantánea sobre fertilidad, agua y riesgo de nutrientes.",
+    selectLanguage: "Idioma"
+  },
+  fr: {
+    appName: "Leaflens",
+    home: "Accueil",
+    services: "Services",
+    soil: "Sol",
+    about: "À propos",
+    heroKicker: "Démo d'agriculture de précision pour les agriculteurs indiens",
+    heroTitle: "Détectez les maladies des cultures plus rapidement et planifiez les travaux des champs en toute confiance.",
+    heroText: "Leaflens réunit le dépistage des symptômes des cultures et des conseils météorologiques simples dans une interface claire et conviviale pour mobile afin que les agriculteurs examinent ce qu'ils voient dans le champ et décident quoi faire ensuite.",
+    tryDemo: "Essayer la démo",
+    seeProjectScope: "Voir la portée du projet",
+    platform: "Plateforme",
+    platformTitle: "Construit autour des trois contrôles que les agriculteurs recherchent en premier",
+    platformCopy: "Cette version est toujours une démo frontale, mais l'interface se rapproche davantage d'un produit réel avec des flux de travail de maladie, météo et sol conçus pour des décisions rapides sur le terrain.",
+    diseaseDetection: "Détection des maladies",
+    leafSymptomScreening: "Dépistage des symptômes des feuilles",
+    leafSymptomDesc: "Guidez l'utilisateur de la sélection des cultures au téléchargement d'images avec une carte de résultats ciblée et des conseils de traitement pratiques.",
+    weatherPlanning: "Planification météorologique",
+    fieldReadyForecast: "Panneau de prévision prêt pour le champ",
+    forecastDesc: "Résumer la température, la probabilité de précipitations et une brève recommandation pour les trois prochains jours.",
+    soilAnalysis: "Analyse du sol",
+    dataDrivernSoil: "Informations sur le sol basées sur les données",
+    soilDesc: "Analysez le pH, NPK, l'humidité, le carbone organique et les valeurs climatiques pour obtenir un score de fertilité et des actions correctives majeures.",
+    demo01: "Démo 01",
+    detectCropDisease: "Détecter les maladies des cultures",
+    interviewMode: "Mode Entretien",
+    detectSimulate: "Simulez un agriculteur téléchargeant une image de feuille et recevant une carte de diagnostic claire avec contexte de culture et conseils pour les prochaines étapes.",
+    selectCrop: "Sélectionner une culture",
+    uploadLeafPhoto: "Télécharger une photo de feuille",
+    analyzeImage: "Analyser l'image",
+    cropLimitNote: "La liste des cultures est limitée à ce que votre modèle ML actuel supporte.",
+    noImageSelected: "Aucune image sélectionnée pour l'instant.",
+    selectedImage: "Image sélectionnée",
+    healthCheckMessage: "Vérification du statut de l'API ML...",
+    mlApiHealth: "Santé de l'API ML",
+    recheckApi: "Revérifier l'API",
+    checking: "Vérification en cours...",
+    online: "En ligne",
+    wakingUp: "Réveil en cours",
+    backendReachable: "Le backend est accessible et prêt pour l'analyse d'images.",
+    renderWakingUp: "Le backend Render se réveille. Réessayez dans 30 à 60 secondes.",
+    detectionResult: "Résultat de la détection",
+    diseaseNotDetected: "Maladie non détectée",
+    diseaseDetected: "Maladie détectée",
+    cropAnalyzed: "Culture analysée",
+    mode: "Mode",
+    mlModelAnalysis: "Analyse du modèle ML",
+    demoMode: "Mode démo",
+    status: "Statut",
+    severity: "Gravité",
+    recommendation: "Recommandation",
+    topPredictions: "Prédictions principales",
+    confidenceMargin: "Marge de confiance (Top1-Top2)",
+    whyVerification: "Pourquoi la vérification est nécessaire",
+    demo02: "Démo 02",
+    weatherOutlook: "Perspectives météorologiques",
+    weatherSimulate: "Entrez un nom de lieu et obtenez un rapide conseil agricole de 3 jours à partir de données en direct.",
+    location: "Lieu",
+    locationHint: "Ex. Delhi, Mumbai, Bangalore",
+    getWeather: "Obtenir la météo",
+    demo03: "Démo 03",
+    soilTool: "Analyse du carbone et de la fertilité du sol",
+    soilSimulate: "Entrez les valeurs du test de sol et obtenez des informations importantes sur la fertilité, le stress hydrique et les actions correctives.",
+    fertilityScore: "Score de fertilité",
+    waterRisk: "Risque d'eau",
+    nutrientRisk: "Risque de nutriments",
+    yieldOutlook: "Perspectives de rendement",
+    majorInsights: "Informations majeures",
+    majorDrivers: "Facteurs majeurs",
+    recommendations: "Recommandations",
+    section02: "Aperçu du terrain",
+    section02Title: "Un écran pour trois vérifications agricoles à fort impact.",
+    leafScanTitle: "Démo de numérisation des feuilles",
+    weatherTitle: "Perspectives météorologiques",
+    soilTitle: "Intelligence du sol",
+    leafScanDesc: "Sélectionnez une culture, téléchargez une image de feuille et examinez un résumé structuré de la maladie.",
+    weatherDesc: "Générez une carte de prévision de 3 jours avec précipitations et conseils de travail.",
+    soilPanelDesc: "Entrez les valeurs du sol et obtenez instantanément des informations majeures sur la fertilité, l'eau et le risque de nutriments.",
+    selectLanguage: "Langue"
+  },
+  hi: {
+    appName: "Leaflens",
+    home: "होम",
+    services: "सेवाएं",
+    soil: "मिट्टी",
+    about: "के बारे में",
+    heroKicker: "भारतीय किसानों के लिए सटीक खेती डेमो",
+    heroTitle: "फसल रोगों का तेजी से पता लगाएं और अधिक आत्मविश्वास के साथ खेती का काम योजना बनाएं।",
+    heroText: "Leaflens फसल के लक्षणों की जांच और सरल मौसम मार्गदर्शन को एक स्पष्ट मोबाइल-अनुकूल इंटरफेस में लाता है ताकि किसान देख सकें कि वे खेत में क्या देख रहे हैं और अगला क्या करें।",
+    tryDemo: "डेमो आज़माएं",
+    seeProjectScope: "प्रोजेक्ट स्कोप देखें",
+    platform: "प्लेटफॉर्म",
+    platformTitle: "किसानों द्वारा पहले मांगी जाने वाली तीन जांचों के आसपास निर्मित",
+    platformCopy: "यह संस्करण अभी भी एक फ्रंटएंड डेमो है, लेकिन इंटरफेस तेजी से खेत के निर्णयों के लिए डिज़ाइन किए गए रोग, मौसम और मिट्टी के वर्कफ़्लो के साथ एक वास्तविक उत्पाद के करीब महसूस करता है।",
+    diseaseDetection: "रोग पहचान",
+    leafSymptomScreening: "पत्ती के लक्षण जांच",
+    leafSymptomDesc: "उपयोगकर्ता को फसल चयन से लेकर छवि अपलोड तक एक केंद्रित परिणाम कार्ड और व्यावहारिक उपचार सलाह के साथ गाइड करें।",
+    weatherPlanning: "मौसम योजना",
+    fieldReadyForecast: "खेत के लिए तैयार पूर्वानुमान पैनल",
+    forecastDesc: "तापमान, वर्षा की संभावना और अगले तीन दिनों के लिए एक संक्षिप्त सुझाव को सारांश दें।",
+    soilAnalysis: "मिट्टी विश्लेषण",
+    dataDrivernSoil: "डेटा-संचालित मिट्टी अंतर्दृष्टि",
+    soilDesc: "उर्वरता स्कोर और प्रमुख सुधारात्मक कार्यों के लिए pH, NPK, नमी, जैविक कार्बन और जलवायु मानों का विश्लेषण करें।",
+    demo01: "डेमो 01",
+    detectCropDisease: "फसल रोग का पता लगाएं",
+    interviewMode: "साक्षात्कार मोड",
+    detectSimulate: "एक किसान को पत्ती की छवि अपलोड करने और फसल संदर्भ और अगली चरण सलाह के साथ एक स्पष्ट निदान कार्ड प्राप्त करने का अनुकरण करें।",
+    selectCrop: "फसल चुनें",
+    uploadLeafPhoto: "पत्ती फोटो अपलोड करें",
+    analyzeImage: "छवि का विश्लेषण करें",
+    cropLimitNote: "फसल सूची इस तक सीमित है कि आपका वर्तमान ML मॉडल क्या समर्थन करता है।",
+    noImageSelected: "अभी तक कोई छवि नहीं चुनी गई है।",
+    selectedImage: "चयनित छवि",
+    healthCheckMessage: "ML API स्थिति की जांच की जा रही है...",
+    mlApiHealth: "ML API स्वास्थ्य",
+    recheckApi: "API को फिर से जांचें",
+    checking: "जांच की जा रही है...",
+    online: "ऑनलाइन",
+    wakingUp: "जाग रहा है",
+    backendReachable: "बैकएंड पहुंचने योग्य है और छवि विश्लेषण के लिए तैयार है।",
+    renderWakingUp: "Render बैकएंड जाग रहा है। लगभग 30-60 सेकंड में दोबारा कोशिश करें।",
+    detectionResult: "पहचान परिणाम",
+    diseaseNotDetected: "रोग का पता नहीं चला",
+    diseaseDetected: "रोग का पता चला",
+    cropAnalyzed: "फसल का विश्लेषण किया गया",
+    mode: "मोड",
+    mlModelAnalysis: "ML मॉडल विश्लेषण",
+    demoMode: "डेमो मोड",
+    status: "स्थिति",
+    severity: "गंभीरता",
+    recommendation: "अनुशंसा",
+    topPredictions: "शीर्ष भविष्यवाणियां",
+    confidenceMargin: "आत्मविश्वास मार्जिन (Top1-Top2)",
+    whyVerification: "सत्यापन क्यों आवश्यक है",
+    demo02: "डेमो 02",
+    weatherOutlook: "मौसम दृष्टिकोण",
+    weatherSimulate: "एक स्थान का नाम दर्ज करें और लाइव डेटा से 3-दिन की त्वरित खेती सलाह प्राप्त करें।",
+    location: "स्थान",
+    locationHint: "जैसे दिल्ली, मुंबई, बेंगलुरु",
+    getWeather: "मौसम प्राप्त करें",
+    demo03: "डेमो 03",
+    soilTool: "मिट्टी कार्बन और उर्वरता विश्लेषण",
+    soilSimulate: "मिट्टी परीक्षण मान दर्ज करें और उर्वरता, जल तनाव और सुधारात्मक कार्यों के बारे में प्रमुख अंतर्दृष्टि प्राप्त करें।",
+    fertilityScore: "उर्वरता स्कोर",
+    waterRisk: "जल जोखिम",
+    nutrientRisk: "पोषक तत्व जोखिम",
+    yieldOutlook: "फसल दृष्टिकोण",
+    majorInsights: "प्रमुख अंतर्दृष्टि",
+    majorDrivers: "प्रमुख चालक",
+    recommendations: "अनुशंसाएं",
+    section02: "खेत स्नैपशॉट",
+    section02Title: "तीन उच्च प्रभाव वाली खेत जांचों के लिए एक स्क्रीन।",
+    leafScanTitle: "पत्ती स्कैन डेमो",
+    weatherTitle: "मौसम दृष्टिकोण",
+    soilTitle: "मिट्टी बुद्धिमत्ता",
+    leafScanDesc: "एक फसल चुनें, पत्ती की छवि अपलोड करें और एक संरचित रोग सारांश की समीक्षा करें।",
+    weatherDesc: "वर्षा और काम सलाह के साथ 3-दिन का पूर्वानुमान कार्ड तैयार करें।",
+    soilPanelDesc: "मिट्टी मान दर्ज करें और उर्वरता, जल और पोषक तत्व जोखिम से संबंधित तुरंत प्रमुख अंतर्दृष्टि प्राप्त करें।",
+    selectLanguage: "भाषा"
+  }
+};
+
 function getWeatherLabel(code) {
   return weatherCodeLabels[code] || "Variable weather";
 }
@@ -368,6 +691,9 @@ function buildClientSoilAnalysis(rawInputs) {
 }
 
 function App() {
+  const [language, setLanguage] = useState("en");
+  const t = translations[language] || translations.en;
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [crop, setCrop] = useState("Tomato");
   const [selectedFile, setSelectedFile] = useState(null);
@@ -718,30 +1044,41 @@ function App() {
       <header className="site-header">
         <nav className="container">
           <a className="logo" href="#home" onClick={() => setMenuOpen(false)}>
-            Leaflens
+            {t.appName}
           </a>
           <ul className={`nav-links${menuOpen ? " active" : ""}`}>
             <li>
               <a href="#home" onClick={() => setMenuOpen(false)}>
-                Home
+                {t.home}
               </a>
             </li>
             <li>
               <a href="#services" onClick={() => setMenuOpen(false)}>
-                Services
+                {t.services}
               </a>
             </li>
             <li>
               <a href="#soil-tool" onClick={() => setMenuOpen(false)}>
-                Soil
+                {t.soil}
               </a>
             </li>
             <li>
               <a href="#about" onClick={() => setMenuOpen(false)}>
-                About
+                {t.about}
               </a>
             </li>
           </ul>
+          <select
+            className="language-selector"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            aria-label={t.selectLanguage}
+          >
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="hi">हिंदी</option>
+          </select>
           <button
             className="mobile-toggle"
             type="button"
@@ -757,18 +1094,17 @@ function App() {
         <section id="home" className="hero">
           <div className="container hero-shell">
             <div className="hero-copy">
-              <p className="hero-kicker">Precision farming demo for Indian growers</p>
-              <h1>Spot crop disease faster and plan field work with more confidence.</h1>
+              <p className="hero-kicker">{t.heroKicker}</p>
+              <h1>{t.heroTitle}</h1>
               <p className="hero-text">
-                Leaflens brings crop symptom screening and simple weather guidance into one clear mobile-friendly
-                interface so farmers can review what they see in the field and decide what to do next.
+                {t.heroText}
               </p>
               <div className="hero-actions">
                 <a href="#services" className="cta-button">
-                  Try Demo
+                  {t.tryDemo}
                 </a>
                 <a href="#about" className="secondary-button">
-                  See Project Scope
+                  {t.seeProjectScope}
                 </a>
               </div>
               <div className="hero-highlights">
@@ -786,22 +1122,22 @@ function App() {
                   <div className="snapshot-item">
                     <span className="snapshot-value">01</span>
                     <div>
-                      <h3>Leaf scan demo</h3>
-                      <p>Select a crop, upload a leaf image, and review a structured disease summary.</p>
+                      <h3>{t.leafScanTitle}</h3>
+                      <p>{t.leafScanDesc}</p>
                     </div>
                   </div>
                   <div className="snapshot-item">
                     <span className="snapshot-value">02</span>
                     <div>
-                      <h3>Weather outlook</h3>
-                      <p>Generate a quick three-day forecast card with rainfall and work advice.</p>
+                      <h3>{t.weatherTitle}</h3>
+                      <p>{t.weatherDesc}</p>
                     </div>
                   </div>
                   <div className="snapshot-item">
                     <span className="snapshot-value">03</span>
                     <div>
-                      <h3>Soil intelligence</h3>
-                      <p>Input soil values and get major fertility, water, and nutrient risk insights instantly.</p>
+                      <h3>{t.soilTitle}</h3>
+                      <p>{t.soilPanelDesc}</p>
                     </div>
                   </div>
                 </div>
@@ -813,37 +1149,34 @@ function App() {
         <section id="services" className="services-section">
           <div className="container">
             <div className="section-heading">
-              <p className="section-label">Platform</p>
-              <h2 className="section-title">Built around the three checks growers reach for first</h2>
+              <p className="section-label">{t.platform}</p>
+              <h2 className="section-title">{t.platformTitle}</h2>
               <p className="section-copy">
-                This version is still a frontend demo, but the interface now feels closer to a real product with
-                disease, weather, and soil workflows designed for fast field decisions.
+                {t.platformCopy}
               </p>
             </div>
 
             <div className="services-grid">
               <article className="service-card">
                 <div className="service-icon">🌿</div>
-                <p className="service-tag">Disease Detection</p>
-                <h3>Leaf symptom screening</h3>
+                <p className="service-tag">{t.diseaseDetection}</p>
+                <h3>{t.leafSymptomScreening}</h3>
                 <p>
-                  Guide the user from crop selection to image upload with a focused result card and practical treatment
-                  advice.
+                  {t.leafSymptomDesc}
                 </p>
               </article>
               <article className="service-card">
                 <div className="service-icon">☁️</div>
-                <p className="service-tag">Weather Planning</p>
-                <h3>Field-ready forecast panel</h3>
-                <p>Summarize temperature, rainfall probability, and a short recommendation for the next three days.</p>
+                <p className="service-tag">{t.weatherPlanning}</p>
+                <h3>{t.fieldReadyForecast}</h3>
+                <p>{t.forecastDesc}</p>
               </article>
               <article className="service-card">
                 <div className="service-icon">🧪</div>
-                <p className="service-tag">Soil Analysis</p>
-                <h3>Data-driven soil insights</h3>
+                <p className="service-tag">{t.soilAnalysis}</p>
+                <h3>{t.dataDrivernSoil}</h3>
                 <p>
-                  Analyze pH, NPK, moisture, organic carbon, and climate values to get fertility score and major
-                  corrective actions.
+                  {t.soilDesc}
                 </p>
               </article>
             </div>
@@ -851,9 +1184,9 @@ function App() {
             <div className="demo-grid">
               <section className="tool-panel" aria-labelledby="detection-heading">
                 <div className="panel-heading">
-                  <p className="panel-label">Demo 01</p>
+                  <p className="panel-label">{t.demo01}</p>
                   <h3 className="demo-title" id="detection-heading">
-                    Detect Crop Disease
+                    {t.detectCropDisease}
                   </h3>
                   <button
                     type="button"
@@ -889,7 +1222,7 @@ function App() {
 
                 <form className="detection-form" onSubmit={handleDiseaseSubmit}>
                   <div className="form-group">
-                    <label htmlFor="crop-type">Select Crop</label>
+                    <label htmlFor="crop-type">{t.selectCrop}</label>
                     <select id="crop-type" value={crop} onChange={(event) => setCrop(event.target.value)}>
                       {supportedModelCrops.map((cropName) => (
                         <option key={cropName}>{cropName}</option>
@@ -897,7 +1230,7 @@ function App() {
                     </select>
                   </div>
                   <div className="form-group">
-                    <label htmlFor="image-upload">Upload Leaf Photo</label>
+                    <label htmlFor="image-upload">{t.uploadLeafPhoto}</label>
                     <input
                       type="file"
                       id="image-upload"
@@ -905,16 +1238,16 @@ function App() {
                       onChange={(event) => {
                         const file = event.target.files?.[0] || null;
                         setSelectedFile(file);
-                        setUploadStatus(file ? `Selected image: ${file.name}` : "No image selected yet.");
+                        setUploadStatus(file ? `${t.selectedImage}: ${file.name}` : t.noImageSelected);
                       }}
                     />
                     <p className="form-hint">
-                      Crop list is limited to what your current ML model supports.
+                      {t.cropLimitNote}
                     </p>
                     <p className="upload-status">{uploadStatus}</p>
                   </div>
                   <div className="form-group">
-                    <button type="submit">Analyze Image</button>
+                    <button type="submit">{t.analyzeImage}</button>
                   </div>
                 </form>
 
