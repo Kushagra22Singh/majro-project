@@ -1026,6 +1026,187 @@ section { padding:5rem 0; }
     color:#735420;
 }
 
+.field-support-section {
+    padding-top:1.2rem;
+}
+
+.input-plan-grid {
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:1.25rem;
+}
+
+.input-plan-card {
+    background:var(--surface-strong);
+    border:1px solid rgba(255, 255, 255, 0.84);
+    border-radius:var(--radius-xl);
+    box-shadow:var(--shadow);
+    padding:1.3rem;
+}
+
+.input-plan-head {
+    display:flex;
+    align-items:center;
+    gap:0.8rem;
+    margin-bottom:1rem;
+}
+
+.input-plan-icon {
+    width:3rem;
+    height:3rem;
+    border-radius:14px;
+    display:grid;
+    place-items:center;
+    background:#e8f2e8;
+    font-size:1.35rem;
+}
+
+.input-plan-head h3 {
+    font-family:"Space Grotesk", sans-serif;
+    font-size:1.8rem;
+}
+
+.input-plan-list {
+    list-style:none;
+    display:grid;
+    gap:0.7rem;
+}
+
+.input-plan-list li {
+    border-top:1px solid #d9e2d6;
+    padding-top:0.75rem;
+}
+
+.input-name {
+    font-size:1.2rem;
+    font-weight:800;
+    color:var(--text);
+}
+
+.input-meta {
+    color:var(--muted);
+    font-size:0.96rem;
+    margin-top:0.2rem;
+}
+
+.stores-panel {
+    margin-top:1.2rem;
+    padding:1.3rem;
+    border-radius:var(--radius-xl);
+    background:var(--surface-strong);
+    border:1px solid rgba(255, 255, 255, 0.84);
+    box-shadow:var(--shadow);
+    display:grid;
+    gap:1rem;
+}
+
+.stores-panel-head {
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+    flex-wrap:wrap;
+    align-items:flex-end;
+}
+
+.stores-form {
+    display:flex;
+    gap:0.6rem;
+    flex-wrap:wrap;
+}
+
+.stores-form input {
+    min-width:250px;
+    padding:0.75rem 0.9rem;
+    border:1.5px solid #d3dfce;
+    border-radius:14px;
+    font:inherit;
+}
+
+.stores-form button {
+    border:none;
+    border-radius:14px;
+    padding:0.75rem 1rem;
+    font:inherit;
+    font-weight:800;
+    cursor:pointer;
+    color:#fff;
+    background:linear-gradient(135deg, var(--primary), var(--primary-deep));
+}
+
+.stores-grid {
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:0.9rem;
+}
+
+.store-card {
+    border:1px solid #cfddcd;
+    border-radius:18px;
+    padding:1rem;
+    background:#f8fcf6;
+    display:grid;
+    gap:0.6rem;
+}
+
+.store-title-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:0.6rem;
+}
+
+.store-title-row h4 {
+    font-family:"Space Grotesk", sans-serif;
+    font-size:1.5rem;
+    line-height:1.15;
+}
+
+.store-distance {
+    display:inline-flex;
+    padding:0.32rem 0.6rem;
+    border-radius:999px;
+    background:#dcece1;
+    color:#1f6a44;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.store-line {
+    color:var(--muted);
+    font-weight:600;
+}
+
+.store-tags {
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.45rem;
+}
+
+.store-tags span {
+    padding:0.3rem 0.58rem;
+    border-radius:10px;
+    border:1px solid #b8d2bb;
+    color:#396247;
+    background:#e6f2e9;
+    font-size:0.88rem;
+    font-weight:700;
+}
+
+.support-links {
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:0.75rem;
+    border-radius:18px;
+    background:#dce9e2;
+    padding:1rem;
+}
+
+.support-label {
+    font-family:"Space Grotesk", sans-serif;
+    font-size:1.15rem;
+    margin-bottom:0.25rem;
+}
+
 .about-section {
     padding-top:0.75rem;
 }
@@ -1125,7 +1306,8 @@ footer {
 @media (max-width: 960px) {
     .hero-shell,
     .about-grid,
-    .result-body {
+    .result-body,
+    .input-plan-grid {
         grid-template-columns:1fr;
     }
 
@@ -1143,6 +1325,10 @@ footer {
 
     .demo-grid {
         grid-template-columns:repeat(3, minmax(320px, 1fr));
+    }
+
+    .stores-grid {
+        grid-template-columns:repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -1209,7 +1395,9 @@ footer {
 
     .soil-kpi-row,
     .soil-columns,
-    .soil-grid-inputs {
+    .soil-grid-inputs,
+    .stores-grid,
+    .support-links {
         grid-template-columns:1fr;
     }
 
@@ -1233,5 +1421,14 @@ footer {
 
     .demo-grid {
         grid-template-columns:repeat(3, minmax(270px, 1fr));
+    }
+
+    .stores-form input {
+        min-width:0;
+        width:100%;
+    }
+
+    .stores-form button {
+        width:100%;
     }
 }

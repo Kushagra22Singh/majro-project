@@ -93,6 +93,7 @@ const weatherCodeLabels = {
 
 const geocodeEndpoint = "https://geocoding-api.open-meteo.com/v1/search";
 const forecastEndpoint = "https://api.open-meteo.com/v1/forecast";
+const overpassEndpoint = "https://overpass-api.de/api/interpreter";
 const isGitHubPagesHost =
   typeof window !== "undefined" && /github\.io$/i.test(window.location.hostname);
 const defaultHostedApiUrl = "https://leaflens-ml-api.onrender.com";
@@ -100,6 +101,135 @@ const apiBaseUrl = (
   import.meta.env.VITE_API_BASE_URL || (isGitHubPagesHost ? defaultHostedApiUrl : "http://localhost:5000")
 ).replace(/\/$/, "");
 const hasConfiguredExternalApi = Boolean(import.meta.env.VITE_API_BASE_URL);
+
+const diseasePesticideProtocols = [
+  {
+    match: /(late blight|leaf blight|northern leaf blight|turcicum)/i,
+    products: [
+      { name: "Chlorothalonil 75 WP", dosage: "2.0 g/L water", schedule: "Every 7 days" },
+      { name: "Copper Oxychloride", dosage: "3.0 g/L water", schedule: "Every 10 days" },
+      { name: "Azoxystrobin", dosage: "1.0 mL/L water", schedule: "Every 14 days" }
+    ]
+  },
+  {
+    match: /(early blight|septoria|target spot)/i,
+    products: [
+      { name: "Mancozeb 75 WP", dosage: "2.5 g/L water", schedule: "Every 7 days" },
+      { name: "Chlorothalonil 75 WP", dosage: "2.0 g/L water", schedule: "Every 7 days" },
+      { name: "Azoxystrobin", dosage: "1.0 mL/L water", schedule: "Every 10-14 days" }
+    ]
+  },
+  {
+    match: /(rust|powdery mildew|leaf scorch)/i,
+    products: [
+      { name: "Wettable Sulphur", dosage: "2.5 g/L water", schedule: "Every 7-10 days" },
+      { name: "Propiconazole", dosage: "1.0 mL/L water", schedule: "Every 12 days" },
+      { name: "Azoxystrobin", dosage: "1.0 mL/L water", schedule: "Every 14 days" }
+    ]
+  },
+  {
+    match: /(bacterial spot|black rot|canker)/i,
+    products: [
+      { name: "Copper Oxychloride", dosage: "3.0 g/L water", schedule: "Every 7 days" },
+      { name: "Streptocycline", dosage: "0.3 g/L water", schedule: "Every 10 days" },
+      { name: "Bordeaux Mixture", dosage: "1% solution", schedule: "At symptom onset" }
+    ]
+  }
+];
+
+function toRad(value) {
+  return (value * Math.PI) / 180;
+}
+
+function distanceInKm(lat1, lon1, lat2, lon2) {
+  const earthRadiusKm = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return earthRadiusKm * c;
+}
+
+function inferStoreTags(name, tags) {
+  const source = `${name || ""} ${Object.values(tags || {}).join(" ")}`.toLowerCase();
+  const labels = [];
+
+  if (/(fertilizer|urea|dap|npk|potash|micronutrient)/.test(source)) labels.push("Fertilizers");
+  if (/(pesticide|fungicide|insecticide|crop care)/.test(source)) labels.push("Pesticides");
+  if (/(seed|nursery|hybrid|agri input)/.test(source)) labels.push("Seeds");
+
+  return labels.length ? labels : ["Farm Inputs"];
+}
+
+function buildFertilizerPlanFromSoil(soilResult) {
+  const levels = soilResult?.levels || {};
+  const recommendations = [];
+
+  if (levels.nitrogen === "low") {
+    recommendations.push({ name: "Urea (46-0-0)", dosage: "110 kg/ha", stage: "Split at vegetative stage" });
+    recommendations.push({ name: "Calcium Nitrate", dosage: "200 kg/ha", stage: "Vegetative stage" });
+  }
+
+  if (levels.phosphorus === "low") {
+    recommendations.push({ name: "DAP (18-46-0)", dosage: "100 kg/ha", stage: "Base application" });
+    recommendations.push({ name: "SSP", dosage: "125 kg/ha", stage: "At sowing/transplant" });
+  }
+
+  if (levels.potassium === "low") {
+    recommendations.push({ name: "MOP (0-0-60)", dosage: "80 kg/ha", stage: "Basal or early growth" });
+    recommendations.push({ name: "SOP", dosage: "50 kg/ha", stage: "Flowering-fruiting" });
+  }
+
+  if (levels.organicCarbon === "low") {
+    recommendations.push({ name: "Vermicompost", dosage: "2.0 t/ha", stage: "Before planting" });
+  }
+
+  if (!recommendations.length) {
+    recommendations.push({ name: "NPK 19-19-19", dosage: "150 kg/ha", stage: "Base application" });
+    recommendations.push({ name: "Boron Foliar", dosage: "1 g/L", stage: "Flowering stage" });
+  }
+
+  const unique = [];
+  const seen = new Set();
+  for (const item of recommendations) {
+    if (seen.has(item.name)) continue;
+    seen.add(item.name);
+    unique.push(item);
+  }
+
+  return unique.slice(0, 3);
+}
+
+function buildPesticidePlanFromDisease(diseaseResult) {
+  const diseaseName = diseaseResult?.name || "";
+  if (!diseaseName || !diseaseResult?.isDetected) {
+    return [
+      { name: "Neem Oil (1500 ppm)", dosage: "3.0 mL/L water", schedule: "Preventive every 10 days" },
+      { name: "Trichoderma (bio-fungicide)", dosage: "5.0 g/L water", schedule: "Every 14 days" },
+      { name: "Copper Oxychloride", dosage: "2.5 g/L water", schedule: "Only if early symptoms appear" }
+    ];
+  }
+
+  const protocol = diseasePesticideProtocols.find((item) => item.match.test(diseaseName));
+  if (protocol) {
+    return protocol.products;
+  }
+
+  return [
+    { name: "Mancozeb 75 WP", dosage: "2.5 g/L water", schedule: "Every 7 days" },
+    { name: "Copper Oxychloride", dosage: "3.0 g/L water", schedule: "Every 10 days" },
+    { name: "Azoxystrobin", dosage: "1.0 mL/L water", schedule: "Every 14 days" }
+  ];
+}
+
+function buildInputRecommendations(diseaseResult, soilResult) {
+  return {
+    pesticides: buildPesticidePlanFromDisease(diseaseResult),
+    fertilizers: buildFertilizerPlanFromSoil(soilResult)
+  };
+}
 
 const translations = {
   en: {
@@ -895,6 +1025,78 @@ async function getForecast(latitude, longitude, timeZone) {
   return data.daily;
 }
 
+async function getNearbyAgroStores(locationName) {
+  const place = await getLocationDetails(locationName);
+  const radiusMeters = 12000;
+  const query = `[out:json][timeout:25];
+(
+  node["shop"~"agrarian|farm|garden_centre"](around:${radiusMeters},${place.latitude},${place.longitude});
+  way["shop"~"agrarian|farm|garden_centre"](around:${radiusMeters},${place.latitude},${place.longitude});
+  relation["shop"~"agrarian|farm|garden_centre"](around:${radiusMeters},${place.latitude},${place.longitude});
+  node["name"~"agro|agri|fertilizer|pesticide|seed",i](around:${radiusMeters},${place.latitude},${place.longitude});
+  way["name"~"agro|agri|fertilizer|pesticide|seed",i](around:${radiusMeters},${place.latitude},${place.longitude});
+  relation["name"~"agro|agri|fertilizer|pesticide|seed",i](around:${radiusMeters},${place.latitude},${place.longitude});
+);
+out center tags 40;`;
+
+  const response = await fetch(overpassEndpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+    },
+    body: new URLSearchParams({ data: query }).toString()
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to fetch nearby agro stores right now.");
+  }
+
+  const payload = await response.json();
+  const elements = Array.isArray(payload?.elements) ? payload.elements : [];
+
+  const mapped = elements
+    .map((item) => {
+      const lat = item.lat ?? item.center?.lat;
+      const lon = item.lon ?? item.center?.lon;
+      if (typeof lat !== "number" || typeof lon !== "number") return null;
+
+      const tags = item.tags || {};
+      const name = tags.name || "Agri Input Store";
+      const locality = [tags["addr:street"], tags["addr:suburb"], tags["addr:city"], tags["addr:state"]]
+        .filter(Boolean)
+        .join(", ");
+
+      return {
+        id: `${item.type}-${item.id}`,
+        name,
+        address: locality || "Address unavailable in map data",
+        phone: tags["contact:phone"] || tags.phone || "Phone not listed",
+        labels: inferStoreTags(name, tags),
+        distanceKm: distanceInKm(place.latitude, place.longitude, lat, lon)
+      };
+    })
+    .filter(Boolean);
+
+  const unique = [];
+  const seen = new Set();
+  for (const row of mapped) {
+    const key = `${row.name.toLowerCase()}|${row.address.toLowerCase()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(row);
+  }
+
+  const stores = unique.sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 6);
+  if (!stores.length) {
+    throw new Error("No agro-input stores found for this location.");
+  }
+
+  return {
+    displayName: place.displayName,
+    stores
+  };
+}
+
 function getDiseaseInsight(result, t) {
   if (!result?.isDetected) {
     return {
@@ -1073,6 +1275,11 @@ function App() {
   const [weatherCards, setWeatherCards] = useState([]);
   const [weatherMetaInfo, setWeatherMetaInfo] = useState("Live forecast powered by Open-Meteo.");
   const [weatherStatus, setWeatherStatus] = useState(null);
+  const [storeLocation, setStoreLocation] = useState("Ludhiana");
+  const [storeMetaInfo, setStoreMetaInfo] = useState("Live agro stores powered by OpenStreetMap data.");
+  const [storeStatus, setStoreStatus] = useState(null);
+  const [nearbyStores, setNearbyStores] = useState([]);
+  const [inputRecommendations, setInputRecommendations] = useState(() => buildInputRecommendations(null, null));
   const [soilInputs, setSoilInputs] = useState({
     crop: "Tomato",
     ph: "6.7",
@@ -1112,6 +1319,10 @@ function App() {
   ];
 
   const [detectionStatus, setDetectionStatus] = useState(null);
+
+  useEffect(() => {
+    setInputRecommendations(buildInputRecommendations(diseaseResult, soilResult));
+  }, [diseaseResult, soilResult]);
 
   // Translate dynamic content when language changes
   useEffect(() => {
@@ -1430,6 +1641,25 @@ function App() {
         type: "info",
         message: `${t.soilUnreachable} (${message}).`
       });
+    }
+  };
+
+  const handleLoadFieldSupport = async (event) => {
+    event.preventDefault();
+
+    const queryLocation = storeLocation.trim() || location.trim() || "Ludhiana";
+    setStoreStatus({ type: "loading", message: `Finding agro stores around ${queryLocation}...` });
+
+    try {
+      const result = await getNearbyAgroStores(queryLocation);
+      setNearbyStores(result.stores);
+      setStoreMetaInfo(`Nearby stores for ${result.displayName} • OpenStreetMap/Overpass live data`);
+      setStoreStatus(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to load nearby stores right now.";
+      setNearbyStores([]);
+      setStoreStatus({ type: "error", message });
+      setStoreMetaInfo("Live agro stores powered by OpenStreetMap data.");
     }
   };
 
@@ -1979,6 +2209,102 @@ function App() {
                 )}
               </section>
             </div>
+          </div>
+        </section>
+
+        <section id="field-support" className="field-support-section">
+          <div className="container">
+            <div className="section-heading">
+              <p className="section-label">Field Support</p>
+              <h2 className="section-title">Pesticides, Fertilizers, and Nearby Agro Stores</h2>
+              <p className="section-copy">
+                Recommendations are generated from the detected disease and soil profile (rule-based, non-random). Nearby
+                stores are fetched live from OpenStreetMap Overpass.
+              </p>
+            </div>
+
+            <div className="input-plan-grid">
+              <article className="input-plan-card">
+                <div className="input-plan-head">
+                  <div className="input-plan-icon">🧪</div>
+                  <h3>Pesticides</h3>
+                </div>
+                <ul className="input-plan-list">
+                  {inputRecommendations.pesticides.map((item) => (
+                    <li key={item.name}>
+                      <p className="input-name">{item.name}</p>
+                      <p className="input-meta">{item.dosage} · {item.schedule}</p>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+
+              <article className="input-plan-card">
+                <div className="input-plan-head">
+                  <div className="input-plan-icon">🌾</div>
+                  <h3>Fertilizers</h3>
+                </div>
+                <ul className="input-plan-list">
+                  {inputRecommendations.fertilizers.map((item) => (
+                    <li key={item.name}>
+                      <p className="input-name">{item.name}</p>
+                      <p className="input-meta">{item.dosage} · {item.stage}</p>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </div>
+
+            <article className="stores-panel">
+              <div className="stores-panel-head">
+                <div>
+                  <p className="panel-label">Nearby Agro Stores</p>
+                  <p className="weather-source">{storeMetaInfo}</p>
+                </div>
+                <form className="stores-form" onSubmit={handleLoadFieldSupport}>
+                  <input
+                    type="text"
+                    value={storeLocation}
+                    onChange={(event) => setStoreLocation(event.target.value)}
+                    placeholder="Enter city, e.g. Ludhiana"
+                  />
+                  <button type="submit">Find Stores</button>
+                </form>
+              </div>
+
+              {storeStatus && <div className={`weather-status weather-status-${storeStatus.type}`}>{storeStatus.message}</div>}
+
+              {nearbyStores.length > 0 && (
+                <div className="stores-grid">
+                  {nearbyStores.map((store) => (
+                    <article className="store-card" key={store.id}>
+                      <div className="store-title-row">
+                        <h4>{store.name}</h4>
+                        <span className="store-distance">{store.distanceKm.toFixed(1)} km away</span>
+                      </div>
+                      <p className="store-line">📍 {store.address}</p>
+                      <p className="store-line">📞 {store.phone}</p>
+                      <div className="store-tags">
+                        {store.labels.map((label) => (
+                          <span key={`${store.id}-${label}`}>{label}</span>
+                        ))}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+
+              <div className="support-links">
+                <div>
+                  <p className="support-label">Kisan Call Centre</p>
+                  <p>1800-180-1551</p>
+                </div>
+                <div>
+                  <p className="support-label">PM Kisan Portal</p>
+                  <p>https://pmkisan.gov.in</p>
+                </div>
+              </div>
+            </article>
           </div>
         </section>
 
