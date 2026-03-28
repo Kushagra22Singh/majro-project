@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "./TranslationContext";
+import { translateText } from "./translationService";
 
 const diseases = [
   {
@@ -1059,7 +1061,7 @@ function buildClientSoilAnalysis(rawInputs) {
 }
 
 function App() {
-  const [language, setLanguage] = useState("en");
+  const { language, setLanguage, tSync } = useTranslation();
   const t = translations[language] || translations.en;
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -1111,8 +1113,35 @@ function App() {
 
   const [detectionStatus, setDetectionStatus] = useState(null);
 
+  // Translate dynamic content when language changes
+  useEffect(() => {
+    const translateDiseaseData = async () => {
+      if (language === 'en') return;
+      
+      // Translate disease names, descriptions, and advice
+      for (const disease of diseases) {
+        disease.name = await translateText(disease.name, language, 'en');
+        disease.desc = await translateText(disease.desc, language, 'en');
+        disease.severity = await translateText(disease.severity, language, 'en');
+        disease.advice = await translateText(disease.advice, language, 'en');
+      }
+    };
+
+    const translateWeatherData = async () => {
+      if (language === 'en') return;
+
+      // Translate weather code labels
+      for (const [code, label] of Object.entries(weatherCodeLabels)) {
+        weatherCodeLabels[code] = await translateText(label, language, 'en');
+      }
+    };
+
+    translateDiseaseData();
+    translateWeatherData();
+  }, [language]);
+
   const previewUrl = useMemo(() => {
-    if (selectedFile) {
+      if (selectedFile) {
       return URL.createObjectURL(selectedFile);
     }
     return "";
@@ -1442,7 +1471,12 @@ function App() {
             <option value="en">English</option>
             <option value="es">Español</option>
             <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
             <option value="hi">हिंदी</option>
+            <option value="pt">Português</option>
+            <option value="ja">日本語</option>
+            <option value="zh">中文</option>
+            <option value="ar">العربية</option>
           </select>
           <button
             className="mobile-toggle"
