@@ -178,7 +178,99 @@ const translations = {
     leafScanDesc: "Select a crop, upload a leaf image, and review a structured disease summary.",
     weatherDesc: "Generate a quick three-day forecast card with rainfall and work advice.",
     soilPanelDesc: "Input soil values and get major fertility, water, and nutrient risk insights instantly.",
-    selectLanguage: "Language"
+    selectLanguage: "Language",
+    thunderstormRisk: "Thunderstorm risk expected. Avoid open-field operations during lightning hours.",
+    highRainChance: "High rain chance. Delay spraying and protect inputs and harvested produce.",
+    possibleShowers: "Possible showers. Keep drainage channels open and plan flexible fieldwork windows.",
+    hotConditions: "Hot conditions expected. Prefer irrigation in early morning or late evening.",
+    coolTemperatures: "Cool night temperatures expected. Protect sensitive seedlings where needed.",
+    stableWeather: "Stable weather expected. Suitable window for routine field monitoring and light operations.",
+    variableWeather: "Variable weather",
+    healthyLeafGuidance: "Healthy Leaf Guidance",
+    weeklyLeafChecks: "Keep weekly leaf checks to catch early symptoms before spread.",
+    avoidOverwatering: "Avoid overwatering and improve airflow around the crop canopy.",
+    preventiveBioFungicide: "Apply preventive bio-fungicide during humid or rainy periods.",
+    priorityTreatmentPlan: "Priority Treatment Plan",
+    isolateInfected: "Isolate visibly infected plants or leaves to reduce cross-field spread.",
+    startFungicideProtocol: "Start recommended fungicide protocol immediately and repeat as advised.",
+    recheckField: "Recheck the field in 48-72 hours and document progression with photos.",
+    suggestedFieldActions: "Suggested Field Actions",
+    removeAffectedLeaves: "Remove affected leaves and sanitize tools after each row.",
+    applyTargetedTreatment: "Apply targeted treatment in cool hours for better leaf retention.",
+    reviewNutrientBalance: "Review nutrient balance to improve natural disease resistance.",
+    locationNotFound: "Location not found. Try a city name like Delhi, Pune, or Jaipur.",
+    forecastUnavailable: "Forecast data is currently unavailable for this location.",
+    unableReachWeather: "Unable to reach weather service right now. Please try again.",
+    uploadImage: "Please upload an image first.",
+    analyzeLoading: "Analyzing image with ML model...",
+    analyzeTimeout: "Image analysis timed out. Please retry with a clearer, smaller image.",
+    analyzeError: "Unable to analyze image right now. Please try again.",
+    apiUnreachable: "Could not reach the ML API. Check backend status and verify VITE_API_BASE_URL points to a live HTTPS endpoint.",
+    apiError: "API request failed with status",
+    renderUnavailable: "Render backend is waking up or unavailable (503). Wait 30-60 seconds and try Analyze Image again.",
+    toggleNavigation: "Toggle navigation",
+    yourLocation: "Your Location",
+    forecastLoading: "Fetching live forecast for",
+    unableFetchForecast: "Unable to fetch forecast right now.",
+    unableAnalyzeSoil: "Unable to analyze soil profile right now.",
+    soilUnreachable: "Live API is currently unreachable. Showing built-in website analysis.",
+    soilAnalyzeLoading: "Analyzing soil profile and generating key insights...",
+    soilBuiltInAnalysis: "Built-in website analysis mode is active on GitHub Pages.",
+    usingRenderBackend: "Using default Render backend for disease detection.",
+    fieldSnapshot: "Field Snapshot",
+    oneScreenChecks: "One screen for three high-impact farm checks.",
+    forecastTitle: "Weather Outlook",
+    weatherForecast: "3-Day Forecast",
+    get3DayForecast: "Get 3-Day Forecast",
+    forecastFor: "Forecast for",
+    updated: "Updated",
+    minTemp: "Min",
+    rainChance: "Rain",
+    soilAnalysisTitle: "Soil Analysis and Major Insights",
+    soilFormCrop: "Crop",
+    soilPH: "pH",
+    soilNitrogen: "Nitrogen (mg/kg)",
+    soilPhosphorus: "Phosphorus (mg/kg)",
+    soilPotassium: "Potassium (mg/kg)",
+    soilMoisture: "Moisture (%)",
+    soilCarbon: "Organic Carbon (%)",
+    soilTemp: "Temp (°C)",
+    soilRainfall: "Rainfall (mm)",
+    analyzeButton: "Analyze Soil",
+    needsVerification: "Needs Verification",
+    confident: "% Confident",
+    detectedHeading: "Disease Detected",
+    healthyHeading: "Healthy",
+    acidicSoil: "Acidic soil may reduce nutrient uptake.",
+    alkalinePH: "Alkaline pH can lock phosphorus and micronutrients.",
+    lowNitrogen: "Nitrogen is low, reducing vegetative growth potential.",
+    highNitrogen: "Nitrogen is high; monitor excess foliage and pest pressure.",
+    lowPhosphorus: "Phosphorus is low, affecting root development and flowering.",
+    highPhosphorus: "Phosphorus is high; avoid unnecessary DAP applications.",
+    lowPotassium: "Potassium is low, increasing stress and lodging risk.",
+    highPotassium: "Potassium is high; rebalance future fertilizer schedule.",
+    lowOrganicCarbon: "Low organic carbon indicates poor soil structure and biology.",
+    lowMoisture: "Soil moisture is low and may limit nutrient availability.",
+    highMoisture: "Soil moisture is high and can increase root disease risk.",
+    highSoilTemp: "High soil temperature can stress roots and microbial activity.",
+    lowSoilTemp: "Low soil temperature can slow nutrient mineralization.",
+    highRainfall: "Very high rainfall may cause nutrient leaching.",
+    applyLime: "Apply lime gradually to correct acidic pH.",
+    useGypsum: "Use gypsum and organic matter to improve alkaline soil availability.",
+    increaseNitrogen: "Increase nitrogen in split applications based on crop stage.",
+    applyPhosphorus: "Apply phosphorus near root zone for better early uptake.",
+    supplementPotash: "Supplement potash to improve stress tolerance and plant strength.",
+    addCompost: "Add compost or FYM to improve soil carbon and structure.",
+    mulching: "Use mulching and shorter irrigation intervals to reduce water stress.",
+    improveDrainage: "Improve drainage before heavy rain and avoid fertilizer loss.",
+    maintainSchedule: "Soil is relatively stable; maintain schedule and retest after 45-60 days.",
+    estimatedSoilFertility: "Estimated soil fertility index:",
+    primaryNutrient: "Primary nutrient status:",
+    waterCondition: "Water condition:",
+    organicCarbonStatus: "Organic carbon is",
+    demoMode1: "Demo 01",
+    demoMode2: "Demo 02",
+    demoMode3: "Demo 03"
   },
   es: {
     appName: "Leaflens",
@@ -258,7 +350,99 @@ const translations = {
     leafScanDesc: "Seleccione un cultivo, cargue una imagen de hoja y revise un resumen de enfermedad estructurado.",
     weatherDesc: "Genere una tarjeta de previsión de 3 días con lluvia y consejos de trabajo.",
     soilPanelDesc: "Ingrese valores de suelo y obtenga información instantánea sobre fertilidad, agua y riesgo de nutrientes.",
-    selectLanguage: "Idioma"
+    selectLanguage: "Idioma",
+    thunderstormRisk: "Se espera riesgo de tormenta eléctrica. Evitar operaciones al aire libre durante horas de relámpagos.",
+    highRainChance: "Alta probabilidad de lluvia. Retrasar la pulverización y proteger insumos y productos cosechados.",
+    possibleShowers: "Posibles aguaceros. Mantener canales de drenaje abiertos y planificar ventanas de trabajo flexibles.",
+    hotConditions: "Se esperan condiciones cálidas. Preferir riego en las primeras horas de la mañana o al final de la tarde.",
+    coolTemperatures: "Se esperan temperaturas nocturnas frescas. Proteger las plántulas sensibles donde sea necesario.",
+    stableWeather: "Se espera clima estable. Ventana adecuada para monitoreo de campo rutinario y operaciones ligeras.",
+    variableWeather: "Clima variable",
+    healthyLeafGuidance: "Guía de Hojas Saludables",
+    weeklyLeafChecks: "Realice controles semanales de hojas para detectar síntomas tempranos antes de la propagación.",
+    avoidOverwatering: "Evite el riego excesivo y mejore la circulación de aire alrededor del dosel de cultivos.",
+    preventiveBioFungicide: "Aplique biofungicida preventivo durante períodos húmedos o lluviosos.",
+    priorityTreatmentPlan: "Plan de Tratamiento de Prioridad",
+    isolateInfected: "Aísle plantas o hojas visiblemente infectadas para reducir la propagación del campo.",
+    startFungicideProtocol: "Inicie el protocolo de fungicida recomendado inmediatamente y repita según se indique.",
+    recheckField: "Vuelva a revisar el campo en 48-72 horas y documente la progresión con fotos.",
+    suggestedFieldActions: "Acciones de Campo Sugeridas",
+    removeAffectedLeaves: "Retire hojas afectadas y desinfecte herramientas después de cada hilera.",
+    applyTargetedTreatment: "Aplique tratamiento específico en horas frías para mejor retención de hojas.",
+    reviewNutrientBalance: "Revise el balance nutricional para mejorar la resistencia natural a la enfermedad.",
+    locationNotFound: "Ubicación no encontrada. Intente un nombre de ciudad como Delhi, Pune o Jaipur.",
+    forecastUnavailable: "Los datos de pronóstico no están disponibles actualmente para esta ubicación.",
+    unableReachWeather: "No se puede alcanzar el servicio meteorológico ahora mismo. Intente de nuevo.",
+    uploadImage: "Suba una imagen primero.",
+    analyzeLoading: "Analizando imagen con modelo ML...",
+    analyzeTimeout: "El análisis de imagen agotó el tiempo. Intente nuevamente con una imagen más clara y más pequeña.",
+    analyzeError: "No se puede analizar la imagen ahora mismo. Intente de nuevo.",
+    apiUnreachable: "No se puede acceder a la API de ML. Verifique el estado del backend y asegúrese de que VITE_API_BASE_URL apunte a un endpoint HTTPS en vivo.",
+    apiError: "La solicitud de API falló con estado",
+    renderUnavailable: "El backend de Render se está despertando o no está disponible (503). Espere 30-60 segundos e intente Analizar imagen de nuevo.",
+    toggleNavigation: "Alternar navegación",
+    yourLocation: "Su Ubicación",
+    forecastLoading: "Obteniendo pronóstico en vivo para",
+    unableFetchForecast: "No se puede obtener el pronóstico ahora mismo.",
+    unableAnalyzeSoil: "No se puede analizar el perfil del suelo ahora mismo.",
+    soilUnreachable: "API en vivo actualmente no disponible. Mostrando análisis integrado del sitio web.",
+    soilAnalyzeLoading: "Analizando perfil del suelo y generando información clave...",
+    soilBuiltInAnalysis: "El modo de análisis integrado del sitio web está activo en GitHub Pages.",
+    usingRenderBackend: "Usando el backend de Render predeterminado para detección de enfermedades.",
+    fieldSnapshot: "Snapshot de Campo",
+    oneScreenChecks: "Una pantalla para tres controles de granja de alto impacto.",
+    forecastTitle: "Perspectiva Meteorológica",
+    weatherForecast: "Pronóstico de 3 Días",
+    get3DayForecast: "Obtener Pronóstico de 3 Días",
+    forecastFor: "Pronóstico para",
+    updated: "Actualizado",
+    minTemp: "Mín",
+    rainChance: "Lluvia",
+    soilAnalysisTitle: "Análisis de Suelo e Información Principal",
+    soilFormCrop: "Cultivo",
+    soilPH: "pH",
+    soilNitrogen: "Nitrógeno (mg/kg)",
+    soilPhosphorus: "Fósforo (mg/kg)",
+    soilPotassium: "Potasio (mg/kg)",
+    soilMoisture: "Humedad (%)",
+    soilCarbon: "Carbono Orgánico (%)",
+    soilTemp: "Temp (°C)",
+    soilRainfall: "Lluvia (mm)",
+    analyzeButton: "Analizar Suelo",
+    needsVerification: "Necesita Verificación",
+    confident: "% Confiante",
+    detectedHeading: "Enfermedad Detectada",
+    healthyHeading: "Saludable",
+    acidicSoil: "El suelo ácido puede reducir la absorción de nutrientes.",
+    alkalinePH: "El pH alcalino puede bloquear el fósforo y micronutrientes.",
+    lowNitrogen: "El nitrógeno es bajo, reduciendo el potencial de crecimiento vegetativo.",
+    highNitrogen: "El nitrógeno es alto; monitoree el follaje excesivo y la presión de plagas.",
+    lowPhosphorus: "El fósforo es bajo, afectando desarrollo de raíces y floración.",
+    highPhosphorus: "El fósforo es alto; evite aplicaciones DAP innecesarias.",
+    lowPotassium: "El potasio es bajo, aumentando estrés y riesgo de volcamiento.",
+    highPotassium: "El potasio es alto; reequilibre el cronograma de fertilizantes futuros.",
+    lowOrganicCarbon: "El bajo carbono orgánico indica mala estructura del suelo y biología.",
+    lowMoisture: "La humedad del suelo es baja y puede limitar la disponibilidad de nutrientes.",
+    highMoisture: "La humedad del suelo es alta y puede aumentar el riesgo de enfermedad de raíces.",
+    highSoilTemp: "La alta temperatura del suelo puede estresar raíces y actividad microbiana.",
+    lowSoilTemp: "La baja temperatura del suelo puede ralentizar la mineralización de nutrientes.",
+    highRainfall: "La lluvia muy alta puede causar pérdida de nutrientes por lixiviación.",
+    applyLime: "Aplique cal gradualmente para corregir el pH ácido.",
+    useGypsum: "Use yeso y materia orgánica para mejorar la disponibilidad del suelo alcalino.",
+    increaseNitrogen: "Aumente el nitrógeno en aplicaciones divididas según la etapa del cultivo.",
+    applyPhosphorus: "Aplique fósforo cerca de la zona raíz para mejor absorción temprana.",
+    supplementPotash: "Suministre potasa para mejorar resistencia al estrés y fortaleza de plantas.",
+    addCompost: "Agregue compost o FYM para mejorar carbono del suelo y estructura.",
+    mulching: "Use acolchado e intervalos de riego más cortos para reducir estrés hídrico.",
+    improveDrainage: "Mejore el drenaje antes de lluvia intensa y evite pérdida de fertilizante.",
+    maintainSchedule: "El suelo es relativamente estable; mantenga cronograma y vuelva a probar después de 45-60 días.",
+    estimatedSoilFertility: "Índice estimado de fertilidad del suelo:",
+    primaryNutrient: "Estado nutricional primario:",
+    waterCondition: "Condición de agua:",
+    organicCarbonStatus: "El carbono orgánico es",
+    demoMode1: "Demo 01",
+    demoMode2: "Demo 02",
+    demoMode3: "Demo 03"
   },
   fr: {
     appName: "Leaflens",
@@ -338,7 +522,99 @@ const translations = {
     leafScanDesc: "Sélectionnez une culture, téléchargez une image de feuille et examinez un résumé structuré de la maladie.",
     weatherDesc: "Générez une carte de prévision de 3 jours avec précipitations et conseils de travail.",
     soilPanelDesc: "Entrez les valeurs du sol et obtenez instantanément des informations majeures sur la fertilité, l'eau et le risque de nutriments.",
-    selectLanguage: "Langue"
+    selectLanguage: "Langue",
+    thunderstormRisk: "Risque d'orage prévu. Éviter les opérations en plein air pendant les heures d'éclair.",
+    highRainChance: "Forte probabilité de pluie. Reporter la pulvérisation et protéger les apports et récoltes.",
+    possibleShowers: "Averses possibles. Garder les canaux de drainage ouverts et planifier des fenêtres de travail flexibles.",
+    hotConditions: "Conditions chaudes attendues. Préférer l'irrigation tôt le matin ou en fin d'après-midi.",
+    coolTemperatures: "Températures nocturnes fraîches attendues. Protéger les semis sensibles au besoin.",
+    stableWeather: "Météo stable attendue. Fenêtre appropriée pour la surveillance régulière des champs et les opérations légères.",
+    variableWeather: "Météo variable",
+    healthyLeafGuidance: "Guide des feuilles saines",
+    weeklyLeafChecks: "Effectuez des vérifications foliaires hebdomadaires pour détecter les symptômes précoces avant la propagation.",
+    avoidOverwatering: "Éviter l'arrosage excessif et améliorer la circulation d'air autour de la canopée de culture.",
+    preventiveBioFungicide: "Appliquer un biofongicide préventif pendant les périodes humides ou pluvieuses.",
+    priorityTreatmentPlan: "Plan de traitement prioritaire",
+    isolateInfected: "Isoler les plantes ou feuilles visiblement infectées pour réduire la propagation d'un champ à l'autre.",
+    startFungicideProtocol: "Commencer le protocole de fongicide recommandé immédiatement et répéter selon les instructions.",
+    recheckField: "Revérifier le champ dans 48-72 heures et documenter la progression avec des photos.",
+    suggestedFieldActions: "Actions suggérées sur le terrain",
+    removeAffectedLeaves: "Retirer les feuilles affectées et désinfecter les outils après chaque rang.",
+    applyTargetedTreatment: "Appliquer un traitement ciblé aux heures fraîches pour une meilleure rétention des feuilles.",
+    reviewNutrientBalance: "Examiners l'équilibre nutritivo pour améliorer la résistance naturelle aux maladies.",
+    locationNotFound: "Lieu non trouvé. Essayez un nom de ville comme Delhi, Pune ou Jaipur.",
+    forecastUnavailable: "Les données de prévision ne sont actuellement pas disponibles pour ce lieu.",
+    unableReachWeather: "Impossible d'accéder au service météorologique en ce moment. Veuillez réessayer.",
+    uploadImage: "Veuillez d'abord télécharger une image.",
+    analyzeLoading: "Analyse de l'image avec modèle ML en cours...",
+    analyzeTimeout: "L'analyse d'image a dépassé le délai. Veuillez réessayer avec une image plus claire et plus petite.",
+    analyzeError: "Impossible d'analyser l'image en ce moment. Veuillez réessayer.",
+    apiUnreachable: "Impossible d'accéder à l'API ML. Vérifiez l'état du backend et assurez-vous que VITE_API_BASE_URL pointe vers un endpoint HTTPS en direct.",
+    apiError: "La requête API a échoué avec le statut",
+    renderUnavailable: "Le backend Render se réveille ou est indisponible (503). Attendez 30-60 secondes et réessayez Analyser l'image.",
+    toggleNavigation: "Basculer la navigation",
+    yourLocation: "Votre lieu",
+    forecastLoading: "Récupération de la prévision en direct pour",
+    unableFetchForecast: "Impossible d'obtenir la prévision en ce moment.",
+    unableAnalyzeSoil: "Impossible d'analyser le profil du sol en ce moment.",
+    soilUnreachable: "L'API en direct est actuellement inaccessible. Affichage de l'analyse intégrée du site Web.",
+    soilAnalyzeLoading: "Analyse du profil du sol et génération d'informations clés en cours...",
+    soilBuiltInAnalysis: "Le mode d'analyse intégré du site Web est actif sur GitHub Pages.",
+    usingRenderBackend: "Utilisation du backend Render par défaut pour la détection des maladies.",
+    fieldSnapshot: "Aperçu du terrain",
+    oneScreenChecks: "Un écran pour trois vérifications agricoles à fort impact.",
+    forecastTitle: "Perspectives météorologiques",
+    weatherForecast: "Prévision 3 jours",
+    get3DayForecast: "Obtenir la prévision 3 jours",
+    forecastFor: "Prévision pour",
+    updated: "Mise à jour",
+    minTemp: "Min",
+    rainChance: "Pluie",
+    soilAnalysisTitle: "Analyse du sol et informations majeures",
+    soilFormCrop: "Culture",
+    soilPH: "pH",
+    soilNitrogen: "Azote (mg/kg)",
+    soilPhosphorus: "Phosphore (mg/kg)",
+    soilPotassium: "Potassium (mg/kg)",
+    soilMoisture: "Humidité (%)",
+    soilCarbon: "Carbone Organique (%)",
+    soilTemp: "Temp (°C)",
+    soilRainfall: "Précipitations (mm)",
+    analyzeButton: "Analyser le sol",
+    needsVerification: "Nécessite vérification",
+    confident: "% Confiant",
+    detectedHeading: "Maladie détectée",
+    healthyHeading: "Sain",
+    acidicSoil: "Le sol acide peut réduire l'absorption des nutriments.",
+    alkalinePH: "Un pH alcalin peut bloquer le phosphore et les micronutriments.",
+    lowNitrogen: "L'azote est faible, réduisant le potentiel de croissance végétative.",
+    highNitrogen: "L'azote est élevé; surveillez l'excès de feuillage et la pression parasitaire.",
+    lowPhosphorus: "Le phosphore est faible, affectant le développement des racines et la floraison.",
+    highPhosphorus: "Le phosphore est élevé; évitez les applications DAP inutiles.",
+    lowPotassium: "Le potassium est faible, augmentant le stress et le risque de verse.",
+    highPotassium: "Le potassium est élevé; rééquilibrez le calendrier d'engrais futurs.",
+    lowOrganicCarbon: "Un faible carbone organique indique une mauvaise structure du sol et une biologie.",
+    lowMoisture: "L'humidité du sol est faible et peut limiter la disponibilité des nutriments.",
+    highMoisture: "L'humidité du sol est élevée et peut augmenter le risque de maladie des racines.",
+    highSoilTemp: "Une température du sol élevée peut stresser les racines et l'activité microbienne.",
+    lowSoilTemp: "Une température du sol basse peut ralentir la minéralisation des nutriments.",
+    highRainfall: "Les précipitations très élevées peuvent causer une perte de nutriments par lessivage.",
+    applyLime: "Appliquer la chaux graduellement pour corriger un pH acide.",
+    useGypsum: "Utilisez le gypse et la matière organique pour améliorer la disponibilité du sol alcalin.",
+    increaseNitrogen: "Augmentez l'azote en applications fractionnées selon le stade de la culture.",
+    applyPhosphorus: "Appliquez le phosphore près de la zone racinaire pour une meilleure absorption précoce.",
+    supplementPotash: "Fournir de la potasse pour améliorer la tolérance au stress et la vigueur de la plante.",
+    addCompost: "Ajoutez du compost ou du FYM pour améliorer le carbone du sol et la structure.",
+    mulching: "Utilisez le paillage et les intervalles d'irrigation plus courts pour réduire le stress hydrique.",
+    improveDrainage: "Améliorez le drainage avant les fortes pluies et évitez la perte d'engrais.",
+    maintainSchedule: "Le sol est relativement stable; maintenez le calendrier et retestez après 45-60 jours.",
+    estimatedSoilFertility: "Indice estimé de fertilité du sol:",
+    primaryNutrient: "État nutritionnel primaire:",
+    waterCondition: "Condition de l'eau:",
+    organicCarbonStatus: "Le carbone organique est",
+    demoMode1: "Démo 01",
+    demoMode2: "Démo 02",
+    demoMode3: "Démo 03"
   },
   hi: {
     appName: "Leaflens",
@@ -418,7 +694,99 @@ const translations = {
     leafScanDesc: "एक फसल चुनें, पत्ती की छवि अपलोड करें और एक संरचित रोग सारांश की समीक्षा करें।",
     weatherDesc: "वर्षा और काम सलाह के साथ 3-दिन का पूर्वानुमान कार्ड तैयार करें।",
     soilPanelDesc: "मिट्टी मान दर्ज करें और उर्वरता, जल और पोषक तत्व जोखिम से संबंधित तुरंत प्रमुख अंतर्दृष्टि प्राप्त करें।",
-    selectLanguage: "भाषा"
+    selectLanguage: "भाषा",
+    thunderstormRisk: "तूफान का जोखिम अपेक्षित है। बिजली के घंटों के दौरान खुले मैदान के संचालन से बचें।",
+    highRainChance: "उच्च वर्षा की संभावना। छिड़काव में देरी करें और इनपुट और कटाई की गई उपज की सुरक्षा करें।",
+    possibleShowers: "संभावित बौछारें। जल निकास चैनलों को खुला रखें और लचीली खेती के समय की योजना बनाएं।",
+    hotConditions: "गर्म परिस्थितियां अपेक्षित हैं। सुबह जल्दी या शाम को देर में सिंचाई को प्राथमिकता दें।",
+    coolTemperatures: "ठंडी रातों के तापमान की अपेक्षा है। जहां आवश्यक हो संवेदनशील पौधों की सुरक्षा करें।",
+    stableWeather: "स्थिर मौसम की अपेक्षा है। नियमित मैदान निगरानी और हल्के परचालन के लिए उपयुक्त समय।",
+    variableWeather: "परिवर्तनशील मौसम",
+    healthyLeafGuidance: "स्वस्थ पत्ती मार्गदर्शन",
+    weeklyLeafChecks: "प्रसार से पहले प्रारंभिक लक्षणों को पकड़ने के लिए साप्ताहिक पत्ती जांच रखें।",
+    avoidOverwatering: "अत्यधिक सिंचाई से बचें और फसल की छतरी के चारों ओर वायु संचार में सुधार करें।",
+    preventiveBioFungicide: "नम या बरसात की अवधि के दौरान निवारक जैव कवकनाशक लागू करें।",
+    priorityTreatmentPlan: "प्राथमिकता उपचार योजना",
+    isolateInfected: "दृश्य रूप से संक्रमित पौधों या पत्तियों को अलग करें ताकि खेत में संक्रमण कम हो।",
+    startFungicideProtocol: "अनुशंसित कवकनाशी प्रोटोकॉल को तुरंत शुरू करें और सलाह के अनुसार दोहराएं।",
+    recheckField: "48-72 घंटों में खेत की फिर से जांच करें और तस्वीरों के साथ प्रगति को दस्तावेज़ करें।",
+    suggestedFieldActions: "सुझाए गए खेत कार्य",
+    removeAffectedLeaves: "प्रभावित पत्तियों को हटाएं और प्रत्येक पंक्ति के बाद उपकरणों को कीटाणुरहित करें।",
+    applyTargetedTreatment: "ठंडे घंटों में लक्षित उपचार लागू करें बेहतर पत्ती प्रतिधारण के लिए।",
+    reviewNutrientBalance: "प्राकृतिक रोग प्रतिरोध में सुधार के लिए पोषक संतुलन की समीक्षा करें।",
+    locationNotFound: "स्थान नहीं मिला। दिल्ली, पुणे या जयपुर जैसे शहर का नाम आज़माएं।",
+    forecastUnavailable: "इस स्थान के लिए पूर्वानुमान डेटा वर्तमान में उपलब्ध नहीं है।",
+    unableReachWeather: "अभी मौसम सेवा तक नहीं पहुंचा जा सकता। कृपया फिर से प्रयास करें।",
+    uploadImage: "कृपया पहले एक छवि अपलोड करें।",
+    analyzeLoading: "ML मॉडल के साथ छवि का विश्लेषण जारी है...",
+    analyzeTimeout: "छवि विश्लेषण का समय समाप्त हो गया। कृपया एक स्पष्ट, छोटी छवि के साथ फिर से प्रयास करें।",
+    analyzeError: "अभी छवि का विश्लेषण नहीं किया जा सकता। कृपया फिर से प्रयास करें।",
+    apiUnreachable: "ML API तक नहीं पहुंचा जा सकता। बैकएंड स्थिति की जांच करें और सुनिश्चित करें कि VITE_API_BASE_URL एक लाइव HTTPS एंडपॉइंट की ओर संकेत करता है।",
+    apiError: "API अनुरोध स्थिति के साथ विफल रहा",
+    renderUnavailable: "Render बैकएंड जाग रहा है या उपलब्ध नहीं है (503)। 30-60 सेकंड प्रतीक्षा करें और छवि का विश्लेषण करें फिर से प्रयास करें।",
+    toggleNavigation: "नेविगेशन को टॉगल करें",
+    yourLocation: "आपका स्थान",
+    forecastLoading: "के लिए लाइव पूर्वानुमान प्राप्त किया जा रहा है",
+    unableFetchForecast: "अभी पूर्वानुमान प्राप्त नहीं किया जा सकता।",
+    unableAnalyzeSoil: "अभी मिट्टी प्रोफ़ाइल का विश्लेषण नहीं किया जा सकता।",
+    soilUnreachable: "लाइव API वर्तमान में अगम्य है। अंतर्निहित वेबसाइट विश्लेषण दिखाया जा रहा है।",
+    soilAnalyzeLoading: "मिट्टी प्रोफ़ाइल का विश्लेषण और मुख्य अंतर्दृष्टि उत्पन्न किया जा रहा है...",
+    soilBuiltInAnalysis: "अंतर्निहित वेबसाइट विश्लेषण मोड GitHub पृष्ठों पर सक्रिय है।",
+    usingRenderBackend: "रोग पहचान के लिए डिफ़ॉल्ट Render बैकएंड का उपयोग किया जा रहा है।",
+    fieldSnapshot: "खेत स्नैपशॉट",
+    oneScreenChecks: "तीन उच्च प्रभाव वाली खेत जांचों के लिए एक स्क्रीन।",
+    forecastTitle: "मौसम दृष्टिकोण",
+    weatherForecast: "3-दिवसीय पूर्वानुमान",
+    get3DayForecast: "3-दिवसीय पूर्वानुमान प्राप्त करें",
+    forecastFor: "के लिए पूर्वानुमान",
+    updated: "अपडेट किया गया",
+    minTemp: "न्यूनतम",
+    rainChance: "बारिश",
+    soilAnalysisTitle: "मिट्टी विश्लेषण और प्रमुख अंतर्दृष्टि",
+    soilFormCrop: "फसल",
+    soilPH: "pH",
+    soilNitrogen: "नाइट्रोजन (mg/kg)",
+    soilPhosphorus: "फॉस्फोरस (mg/kg)",
+    soilPotassium: "पोटेशियम (mg/kg)",
+    soilMoisture: "नमी (%)",
+    soilCarbon: "कार्बनिक कार्बन (%)",
+    soilTemp: "तापमान (°C)",
+    soilRainfall: "वर्षा (mm)",
+    analyzeButton: "मिट्टी का विश्लेषण करें",
+    needsVerification: "सत्यापन की आवश्यकता है",
+    confident: "% आश्वस्त",
+    detectedHeading: "रोग का पता चला",
+    healthyHeading: "स्वस्थ",
+    acidicSoil: "अम्लीय मिट्टी पोषक तत्व अवशोषण को कम कर सकती है।",
+    alkalinePH: "क्षारीय pH फॉस्फोरस और सूक्ष्म पोषक तत्वों को बंद कर सकता है।",
+    lowNitrogen: "नाइट्रोजन कम है, सब्जी वृद्धि की संभावना को कम करता है।",
+    highNitrogen: "नाइट्रोजन अधिक है; अत्यधिक पत्ते और कीट के दबाव की निगरानी करें।",
+    lowPhosphorus: "फॉस्फोरस कम है, जड़ विकास और फूल को प्रभावित करता है।",
+    highPhosphorus: "फॉस्फोरस अधिक है; अनावश्यक DAP अनुप्रयोगों से बचें।",
+    lowPotassium: "पोटेशियम कम है, तनाव और बंद होने का जोखिम बढ़ाता है।",
+    highPotassium: "पोटेशियम अधिक है; भविष्य की खाद अनुसूची को पुनः संतुलित करें।",
+    lowOrganicCarbon: "कम कार्बनिक कार्बन खराब मिट्टी संरचना और जीव विज्ञान का संकेत देता है।",
+    lowMoisture: "मिट्टी की नमी कम है और पोषक तत्व की उपलब्धता को सीमित कर सकती है।",
+    highMoisture: "मिट्टी की नमी अधिक है और जड़ रोग का जोखिम बढ़ा सकती है।",
+    highSoilTemp: "उच्च मिट्टी का तापमान जड़ों और सूक्ष्म जीव गतिविधि को तनाव दे सकता है।",
+    lowSoilTemp: "कम मिट्टी का तापमान पोषक खनिजकरण को धीमा कर सकता है।",
+    highRainfall: "बहुत अधिक वर्षा पोषक तत्वों की लीचिंग का कारण बन सकती है।",
+    applyLime: "अम्लीय pH को ठीक करने के लिए धीरे-धीरे चूना लागू करें।",
+    useGypsum: "क्षारीय मिट्टी की उपलब्धता में सुधार के लिए जिप्सम और जैविक पदार्थ का उपयोग करें।",
+    increaseNitrogen: "फसल स्तर के आधार पर विभाजित आवेदन में नाइट्रोजन बढ़ाएं।",
+    applyPhosphorus: "बेहतर प्रारंभिक अवशोषण के लिए जड़ क्षेत्र के पास फॉस्फोरस लागू करें।",
+    supplementPotash: "तनाव सहनशीलता और पौधे की शक्ति में सुधार के लिए पोटास की खपत करें।",
+    addCompost: "मिट्टी के कार्बन और संरचना में सुधार के लिए खाद या FYM जोड़ें।",
+    mulching: "जल तनाव को कम करने के लिए मल्चिंग और छोटे सिंचाई अंतराल का उपयोग करें।",
+    improveDrainage: "भारी बारिश से पहले जल निकास में सुधार करें और खाद हानि से बचें।",
+    maintainSchedule: "मिट्टी अपेक्षाकृत स्थिर है; अनुसूची बनाए रखें और 45-60 दिनों के बाद फिर से परीक्षण करें।",
+    estimatedSoilFertility: "अनुमानित मिट्टी उर्वरता सूचकांक:",
+    primaryNutrient: "प्राथमिक पोषक स्थिति:",
+    waterCondition: "जल स्थिति:",
+    organicCarbonStatus: "कार्बनिक कार्बन है",
+    demoMode1: "डेमो 01",
+    demoMode2: "डेमो 02",
+    demoMode3: "डेमो 03"
   }
 };
 
@@ -426,23 +794,23 @@ function getWeatherLabel(code) {
   return weatherCodeLabels[code] || "Variable weather";
 }
 
-function getFarmingAdvice(maxTemp, minTemp, rainChance, weatherCode) {
+function getFarmingAdvice(maxTemp, minTemp, rainChance, weatherCode, t) {
   if (weatherCode >= 95) {
-    return "Thunderstorm risk expected. Avoid open-field operations during lightning hours.";
+    return t.thunderstormRisk;
   }
   if (rainChance >= 70) {
-    return "High rain chance. Delay spraying and protect inputs and harvested produce.";
+    return t.highRainChance;
   }
   if (rainChance >= 40) {
-    return "Possible showers. Keep drainage channels open and plan flexible fieldwork windows.";
+    return t.possibleShowers;
   }
   if (maxTemp >= 36) {
-    return "Hot conditions expected. Prefer irrigation in early morning or late evening.";
+    return t.hotConditions;
   }
   if (minTemp <= 10) {
-    return "Cool night temperatures expected. Protect sensitive seedlings where needed.";
+    return t.coolTemperatures;
   }
-  return "Stable weather expected. Suitable window for routine field monitoring and light operations.";
+  return t.stableWeather;
 }
 
 function formatForecastDate(dateString, timeZone) {
@@ -525,35 +893,35 @@ async function getForecast(latitude, longitude, timeZone) {
   return data.daily;
 }
 
-function getDiseaseInsight(result) {
+function getDiseaseInsight(result, t) {
   if (!result?.isDetected) {
     return {
-      heading: "Healthy Leaf Guidance",
+      heading: t.healthyLeafGuidance,
       points: [
-        "Keep weekly leaf checks to catch early symptoms before spread.",
-        "Avoid overwatering and improve airflow around the crop canopy.",
-        "Apply preventive bio-fungicide during humid or rainy periods."
+        t.weeklyLeafChecks,
+        t.avoidOverwatering,
+        t.preventiveBioFungicide
       ]
     };
   }
 
   if (String(result.severity).toLowerCase() === "high") {
     return {
-      heading: "Priority Treatment Plan",
+      heading: t.priorityTreatmentPlan,
       points: [
-        "Isolate visibly infected plants or leaves to reduce cross-field spread.",
-        "Start recommended fungicide protocol immediately and repeat as advised.",
-        "Recheck the field in 48-72 hours and document progression with photos."
+        t.isolateInfected,
+        t.startFungicideProtocol,
+        t.recheckField
       ]
     };
   }
 
   return {
-    heading: "Suggested Field Actions",
+    heading: t.suggestedFieldActions,
     points: [
-      "Remove affected leaves and sanitize tools after each row.",
-      "Apply targeted treatment in cool hours for better leaf retention.",
-      "Review nutrient balance to improve natural disease resistance."
+      t.removeAffectedLeaves,
+      t.applyTargetedTreatment,
+      t.reviewNutrientBalance
     ]
   };
 }
@@ -697,7 +1065,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [crop, setCrop] = useState("Tomato");
   const [selectedFile, setSelectedFile] = useState(null);
-  const [uploadStatus, setUploadStatus] = useState("No image selected yet.");
+  const [uploadStatus, setUploadStatus] = useState(t.noImageSelected);
   const [diseaseResult, setDiseaseResult] = useState(null);
   const [location, setLocation] = useState("");
   const [weatherCards, setWeatherCards] = useState([]);
@@ -760,7 +1128,7 @@ function App() {
 
   const checkApiHealth = async (showChecking = false) => {
     if (showChecking) {
-      setApiHealth({ state: "checking", label: "Checking", message: "Checking ML API status..." });
+      setApiHealth({ state: "checking", label: t.checking, message: t.healthCheckMessage });
     }
 
     const controller = new AbortController();
@@ -775,8 +1143,8 @@ function App() {
       if (response.ok) {
         setApiHealth({
           state: "online",
-          label: "Online",
-          message: "Backend is reachable and ready for image analysis."
+          label: t.online,
+          message: t.backendReachable
         });
         return;
       }
@@ -784,8 +1152,8 @@ function App() {
       if (response.status === 503) {
         setApiHealth({
           state: "degraded",
-          label: "Waking Up",
-          message: "Render backend is waking up. Retry in about 30-60 seconds."
+          label: t.wakingUp,
+          message: t.renderWakingUp
         });
         return;
       }
@@ -827,11 +1195,11 @@ function App() {
 
   const handleDiseaseSubmit = (event) => {
     event.preventDefault();
-    setDetectionStatus({ type: "loading", message: "Analyzing image with ML model..." });
+    setDetectionStatus({ type: "loading", message: t.analyzeLoading });
     setDiseaseResult(null);
 
     if (!selectedFile) {
-      setDetectionStatus({ type: "error", message: "Please upload an image first." });
+      setDetectionStatus({ type: "error", message: t.uploadImage });
       return;
     }
 
@@ -839,7 +1207,7 @@ function App() {
     if (isGitHubPagesHost && !hasConfiguredExternalApi) {
       setDetectionStatus({
         type: "info",
-        message: "Using default Render backend for disease detection."
+        message: t.usingRenderBackend
       });
     }
 
@@ -865,12 +1233,10 @@ function App() {
           }
 
           if (response.status === 503) {
-            throw new Error(
-              "Render backend is waking up or unavailable (503). Wait 30-60 seconds and try Analyze Image again."
-            );
+            throw new Error(t.renderUnavailable);
           }
 
-          throw new Error(payload?.error || `API request failed with status ${response.status}.`);
+          throw new Error(payload?.error || `${t.apiError} ${response.status}.`);
         }
         return response.json();
       })
@@ -907,12 +1273,12 @@ function App() {
             : `ML model detected: ${diseaseName} with ${confidence}% confidence.`,
           severity,
           advice: needsReview
-            ? "Retake a clear leaf-only photo and verify with an expert before treatment decisions."
+            ? t.analyzeTimeout
             : isHealthy
               ? "Continue regular monitoring, balanced irrigation, and preventive care."
               : "Please consult with an agronomist for detailed treatment recommendations.",
           crop: [crop],
-          statusLabel: isHealthy ? "Disease not detected" : "Disease detected",
+          statusLabel: isHealthy ? t.diseaseNotDetected : t.diseaseDetected,
           confidence: parseFloat(confidence),
           topPredictions: data.top_3 || [],
           needsReview,
@@ -929,13 +1295,12 @@ function App() {
         setDetectionStatus(null);
       })
       .catch((error) => {
-        let errorMessage = "Unable to analyze image right now. Please try again.";
+        let errorMessage = t.analyzeError;
 
         if (error instanceof Error && error.name === "AbortError") {
-          errorMessage = "Image analysis timed out. Please retry with a clearer, smaller image.";
+          errorMessage = t.analyzeTimeout;
         } else if (error instanceof TypeError) {
-          errorMessage =
-            "Could not reach the ML API. Check backend status and verify VITE_API_BASE_URL points to a live HTTPS endpoint.";
+          errorMessage = t.apiUnreachable;
         } else if (error instanceof Error) {
           errorMessage = error.message;
         }
@@ -952,7 +1317,7 @@ function App() {
     event.preventDefault();
 
     const locationName = location.trim() || "Delhi";
-    setWeatherStatus({ type: "loading", message: `Fetching live forecast for ${locationName}...` });
+    setWeatherStatus({ type: "loading", message: `${t.forecastLoading} ${locationName}...` });
 
     try {
       const place = await getLocationDetails(locationName);
@@ -964,7 +1329,7 @@ function App() {
         const rainChance = Math.round(dailyData.precipitation_probability_max[dayIndex] ?? 0);
         const weatherCode = dailyData.weathercode[dayIndex];
         const conditionLabel = getWeatherLabel(weatherCode);
-        const advice = getFarmingAdvice(maxTemp, minTemp, rainChance, weatherCode);
+        const advice = getFarmingAdvice(maxTemp, minTemp, rainChance, weatherCode, t);
         const { weekday, fullDate } = formatForecastDate(day, place.timeZone);
 
         return {
@@ -983,7 +1348,7 @@ function App() {
       setWeatherStatus(null);
       setWeatherMetaInfo(`Forecast for ${place.displayName} (${place.timeZone}) • Updated ${formatUpdatedTime(place.timeZone)}`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to fetch forecast right now.";
+      const message = error instanceof Error ? error.message : t.unableFetchForecast;
       setWeatherCards([]);
       setWeatherStatus({ type: "error", message });
       setWeatherMetaInfo("Live forecast powered by Open-Meteo.");
@@ -1000,14 +1365,14 @@ function App() {
 
   const handleSoilSubmit = async (event) => {
     event.preventDefault();
-    setSoilStatus({ type: "loading", message: "Analyzing soil profile and generating key insights..." });
+    setSoilStatus({ type: "loading", message: t.soilAnalyzeLoading });
 
     // GitHub Pages is static hosting; use built-in analyzer unless an external API URL is configured.
     if (isGitHubPagesHost && !import.meta.env.VITE_API_BASE_URL) {
       setSoilResult(buildClientSoilAnalysis(soilInputs));
       setSoilStatus({
         type: "info",
-        message: "Built-in website analysis mode is active on GitHub Pages."
+        message: t.soilBuiltInAnalysis
       });
       return;
     }
@@ -1031,10 +1396,10 @@ function App() {
     } catch (error) {
       // Fallback keeps the feature usable if API is unreachable.
       setSoilResult(buildClientSoilAnalysis(soilInputs));
-      const message = error instanceof Error ? error.message : "Unable to analyze soil profile right now.";
+      const message = error instanceof Error ? error.message : t.unableAnalyzeSoil;
       setSoilStatus({
         type: "info",
-        message: `Live API is currently unreachable (${message}). Showing built-in website analysis.`
+        message: `${t.soilUnreachable} (${message}).`
       });
     }
   };
@@ -1332,9 +1697,9 @@ function App() {
                           style={{ display: "block" }}
                         />
                         <div className="disease-insight-card">
-                          <p className="disease-insight-title">{getDiseaseInsight(diseaseResult).heading}</p>
+                          <p className="disease-insight-title">{getDiseaseInsight(diseaseResult, t).heading}</p>
                           <ul className="disease-insight-list">
-                            {getDiseaseInsight(diseaseResult).points.map((point) => (
+                            {getDiseaseInsight(diseaseResult, t).points.map((point) => (
                               <li key={point}>{point}</li>
                             ))}
                           </ul>
