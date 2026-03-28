@@ -91,9 +91,13 @@ const weatherCodeLabels = {
 
 const geocodeEndpoint = "https://geocoding-api.open-meteo.com/v1/search";
 const forecastEndpoint = "https://api.open-meteo.com/v1/forecast";
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
 const isGitHubPagesHost =
   typeof window !== "undefined" && /github\.io$/i.test(window.location.hostname);
+const defaultHostedApiUrl = "https://leaflens-ml-api.onrender.com";
+const apiBaseUrl = (
+  import.meta.env.VITE_API_BASE_URL || (isGitHubPagesHost ? defaultHostedApiUrl : "http://localhost:5000")
+).replace(/\/$/, "");
+const hasConfiguredExternalApi = Boolean(import.meta.env.VITE_API_BASE_URL);
 
 function getWeatherLabel(code) {
   return weatherCodeLabels[code] || "Variable weather";
@@ -388,6 +392,11 @@ function App() {
   const [soilResult, setSoilResult] = useState(null);
   const [isInterviewMode, setIsInterviewMode] = useState(false);
   const [demoUploadStep, setDemoUploadStep] = useState(1);
+  const [apiHealth, setApiHealth] = useState({
+    state: "checking",
+    label: "Checking",
+    message: "Checking ML API status..."
+  });
 
   const supportedModelCrops = [
     "Apple",
@@ -423,6 +432,73 @@ function App() {
     };
   }, [previewUrl]);
 
+  const checkApiHealth = async (showChecking = false) => {
+    if (showChecking) {
+      setApiHealth({ state: "checking", label: "Checking", message: "Checking ML API status..." });
+    }
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 12000);
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/health`, {
+        method: "GET",
+        signal: controller.signal
+      });
+
+      if (response.ok) {
+        setApiHealth({
+          state: "online",
+          label: "Online",
+          message: "Backend is reachable and ready for image analysis."
+        });
+        return;
+      }
+
+      if (response.status === 503) {
+        setApiHealth({
+          state: "degraded",
+          label: "Waking Up",
+          message: "Render backend is waking up. Retry in about 30-60 seconds."
+        });
+        return;
+      }
+
+      setApiHealth({
+        state: "offline",
+        label: "Unavailable",
+        message: `Backend responded with status ${response.status}.`
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        setApiHealth({
+          state: "offline",
+          label: "Timeout",
+          message: "Health check timed out. Verify Render service status and network."
+        });
+      } else {
+        setApiHealth({
+          state: "offline",
+          label: "Offline",
+          message: "Cannot reach ML API endpoint."
+        });
+      }
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  };
+
+  useEffect(() => {
+    checkApiHealth(true);
+    const intervalId = window.setInterval(() => {
+      checkApiHealth(false);
+    }, 60000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
   const handleDiseaseSubmit = (event) => {
     event.preventDefault();
     setDetectionStatus({ type: "loading", message: "Analyzing image with ML model..." });
@@ -433,19 +509,42 @@ function App() {
       return;
     }
 
+    // On hosted frontend, if custom API is not configured, use default Render backend.
+    if (isGitHubPagesHost && !hasConfiguredExternalApi) {
+      setDetectionStatus({
+        type: "info",
+        message: "Using default Render backend for disease detection."
+      });
+    }
+
     const formData = new FormData();
     formData.append("image", selectedFile);
     formData.append("crop", crop);
 
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 45000);
+
     fetch(`${apiBaseUrl}/predict`, {
       method: "POST",
-      body: formData
+      body: formData,
+      signal: controller.signal
     })
-      .then((response) => {
+      .then(async (response) => {
         if (!response.ok) {
-          return response.json().then((payload) => {
-            throw new Error(payload.error || "API request failed. Is the backend running on port 5000?");
-          });
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          if (response.status === 503) {
+            throw new Error(
+              "Render backend is waking up or unavailable (503). Wait 30-60 seconds and try Analyze Image again."
+            );
+          }
+
+          throw new Error(payload?.error || `API request failed with status ${response.status}.`);
         }
         return response.json();
       })
@@ -504,9 +603,22 @@ function App() {
         setDetectionStatus(null);
       })
       .catch((error) => {
-        const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+        let errorMessage = "Unable to analyze image right now. Please try again.";
+
+        if (error instanceof Error && error.name === "AbortError") {
+          errorMessage = "Image analysis timed out. Please retry with a clearer, smaller image.";
+        } else if (error instanceof TypeError) {
+          errorMessage =
+            "Could not reach the ML API. Check backend status and verify VITE_API_BASE_URL points to a live HTTPS endpoint.";
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
         setDiseaseResult(null);
         setDetectionStatus({ type: "error", message: errorMessage });
+      })
+      .finally(() => {
+        window.clearTimeout(timeoutId);
       });
   };
 
@@ -758,6 +870,21 @@ function App() {
                     Simulate a farmer uploading a leaf image and receiving a clear diagnosis card with crop context and
                     next-step advice.
                   </p>
+                  <div className="api-health-card" role="status" aria-live="polite">
+                    <div className="api-health-row">
+                      <p className="api-health-label">ML API Health</p>
+                      <span className={`api-health-pill api-health-pill-${apiHealth.state}`}>{apiHealth.label}</span>
+                    </div>
+                    <p className="api-health-message">{apiHealth.message}</p>
+                    <button
+                      type="button"
+                      className="api-health-action"
+                      onClick={() => checkApiHealth(true)}
+                      disabled={apiHealth.state === "checking"}
+                    >
+                      {apiHealth.state === "checking" ? "Checking..." : "Recheck API"}
+                    </button>
+                  </div>
                 </div>
 
                 <form className="detection-form" onSubmit={handleDiseaseSubmit}>
