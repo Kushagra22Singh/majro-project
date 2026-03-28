@@ -93,7 +93,11 @@ const weatherCodeLabels = {
 
 const geocodeEndpoint = "https://geocoding-api.open-meteo.com/v1/search";
 const forecastEndpoint = "https://api.open-meteo.com/v1/forecast";
-const overpassEndpoint = "https://overpass-api.de/api/interpreter";
+const overpassEndpoints = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://lz4.overpass-api.de/api/interpreter"
+];
 const isGitHubPagesHost =
   typeof window !== "undefined" && /github\.io$/i.test(window.location.hostname);
 const defaultHostedApiUrl = "https://leaflens-ml-api.onrender.com";
@@ -161,6 +165,42 @@ function inferStoreTags(name, tags) {
   if (/(seed|nursery|hybrid|agri input)/.test(source)) labels.push("Seeds");
 
   return labels.length ? labels : ["Farm Inputs"];
+}
+
+function isAgroRelevantName(name = "") {
+  return /(agro|agri|fertili[sz]er|pesticide|seed|krishi|kisan|nursery|crop)/i.test(name);
+}
+
+function isAgroRelevantShop(shop = "") {
+  return /(agrarian|farm|garden_centre|doityourself|hardware)/i.test(shop);
+}
+
+async function fetchOverpassQuery(query) {
+  let lastError = null;
+
+  for (const endpoint of overpassEndpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+        },
+        body: new URLSearchParams({ data: query }).toString()
+      });
+
+      if (!response.ok) {
+        lastError = new Error(`Overpass request failed (${response.status})`);
+        continue;
+      }
+
+      const payload = await response.json();
+      return Array.isArray(payload?.elements) ? payload.elements : [];
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Unknown Overpass request error");
+    }
+  }
+
+  throw lastError || new Error("Unable to reach map data service right now.");
 }
 
 function buildFertilizerPlanFromSoil(soilResult) {
@@ -1027,32 +1067,28 @@ async function getForecast(latitude, longitude, timeZone) {
 
 async function getNearbyAgroStores(locationName) {
   const place = await getLocationDetails(locationName);
-  const radiusMeters = 12000;
-  const query = `[out:json][timeout:25];
+  const strictRadius = 12000;
+  const broadRadius = 18000;
+
+  const strictQuery = `[out:json][timeout:30];
 (
-  node["shop"~"agrarian|farm|garden_centre"](around:${radiusMeters},${place.latitude},${place.longitude});
-  way["shop"~"agrarian|farm|garden_centre"](around:${radiusMeters},${place.latitude},${place.longitude});
-  relation["shop"~"agrarian|farm|garden_centre"](around:${radiusMeters},${place.latitude},${place.longitude});
-  node["name"~"agro|agri|fertilizer|pesticide|seed",i](around:${radiusMeters},${place.latitude},${place.longitude});
-  way["name"~"agro|agri|fertilizer|pesticide|seed",i](around:${radiusMeters},${place.latitude},${place.longitude});
-  relation["name"~"agro|agri|fertilizer|pesticide|seed",i](around:${radiusMeters},${place.latitude},${place.longitude});
+  node["shop"~"agrarian|farm|garden_centre",i](around:${strictRadius},${place.latitude},${place.longitude});
+  way["shop"~"agrarian|farm|garden_centre",i](around:${strictRadius},${place.latitude},${place.longitude});
+  node["name"~"agro|agri|fertili[sz]er|pesticide|seed|krishi|kisan|nursery",i](around:${strictRadius},${place.latitude},${place.longitude});
+  way["name"~"agro|agri|fertili[sz]er|pesticide|seed|krishi|kisan|nursery",i](around:${strictRadius},${place.latitude},${place.longitude});
 );
-out center tags 40;`;
+out center tags 120;`;
 
-  const response = await fetch(overpassEndpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
-    },
-    body: new URLSearchParams({ data: query }).toString()
-  });
+  const broadQuery = `[out:json][timeout:30];
+(
+  node["shop"~"hardware|garden_centre|doityourself",i](around:${broadRadius},${place.latitude},${place.longitude});
+  way["shop"~"hardware|garden_centre|doityourself",i](around:${broadRadius},${place.latitude},${place.longitude});
+);
+out center tags 120;`;
 
-  if (!response.ok) {
-    throw new Error("Unable to fetch nearby agro stores right now.");
-  }
-
-  const payload = await response.json();
-  const elements = Array.isArray(payload?.elements) ? payload.elements : [];
+  const strictElements = await fetchOverpassQuery(strictQuery);
+  const broadElements = strictElements.length >= 4 ? [] : await fetchOverpassQuery(broadQuery);
+  const elements = [...strictElements, ...broadElements];
 
   const mapped = elements
     .map((item) => {
@@ -1062,6 +1098,13 @@ out center tags 40;`;
 
       const tags = item.tags || {};
       const name = tags.name || "Agri Input Store";
+      const shop = tags.shop || "";
+
+      // Keep map entries that are clearly agro-related by name or shop type.
+      if (!(isAgroRelevantName(name) || isAgroRelevantShop(shop))) {
+        return null;
+      }
+
       const locality = [tags["addr:street"], tags["addr:suburb"], tags["addr:city"], tags["addr:state"]]
         .filter(Boolean)
         .join(", ");
@@ -1071,7 +1114,7 @@ out center tags 40;`;
         name,
         address: locality || "Address unavailable in map data",
         phone: tags["contact:phone"] || tags.phone || "Phone not listed",
-        labels: inferStoreTags(name, tags),
+        labels: inferStoreTags(name, { ...tags, shop }),
         distanceKm: distanceInKm(place.latitude, place.longitude, lat, lon)
       };
     })
@@ -1088,7 +1131,7 @@ out center tags 40;`;
 
   const stores = unique.sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 6);
   if (!stores.length) {
-    throw new Error("No agro-input stores found for this location.");
+    throw new Error("No tagged agro-input stores were found nearby. Try a nearby district or major city.");
   }
 
   return {
