@@ -93,6 +93,7 @@ const weatherCodeLabels = {
 
 const geocodeEndpoint = "https://geocoding-api.open-meteo.com/v1/search";
 const forecastEndpoint = "https://api.open-meteo.com/v1/forecast";
+const nominatimEndpoint = "https://nominatim.openstreetmap.org/search";
 const overpassEndpoints = [
   "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
@@ -1301,6 +1302,86 @@ async function getForecast(latitude, longitude, timeZone) {
   return data.daily;
 }
 
+async function searchNominatimPlaces(queryText) {
+  const query = new URLSearchParams({
+    q: queryText,
+    format: "jsonv2",
+    limit: "16",
+    addressdetails: "1"
+  });
+
+  const response = await fetchWithTimeout(
+    `${nominatimEndpoint}?${query.toString()}`,
+    {
+      headers: {
+        Accept: "application/json"
+      }
+    },
+    geoRequestTimeoutMs
+  );
+
+  if (!response.ok) {
+    throw new Error(`Nominatim request failed (${response.status})`);
+  }
+
+  const payload = await response.json();
+  return Array.isArray(payload) ? payload : [];
+}
+
+function mapNominatimRowsToStores(rows, place) {
+  const mapped = rows
+    .map((row) => {
+      const lat = Number(row.lat);
+      const lon = Number(row.lon);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+
+      const primaryName = String(row.name || "").trim();
+      const displayName = String(row.display_name || "").trim();
+      const inferredName = primaryName || displayName.split(",")[0] || "Agri Input Store";
+
+      // Keep entries that look agro-relevant by primary name or display label.
+      if (!(isAgroRelevantName(inferredName) || isAgroRelevantName(displayName))) {
+        return null;
+      }
+
+      return {
+        id: `nominatim-${row.place_id}`,
+        name: inferredName,
+        address: displayName || "Address unavailable in map data",
+        phone: "Phone not listed",
+        labels: inferStoreTags(inferredName, { source: displayName }),
+        distanceKm: distanceInKm(place.latitude, place.longitude, lat, lon)
+      };
+    })
+    .filter(Boolean);
+
+  const unique = [];
+  const seen = new Set();
+  for (const row of mapped) {
+    const key = `${row.name.toLowerCase()}|${row.address.toLowerCase()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(row);
+  }
+
+  return unique.sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 6);
+}
+
+async function getFallbackAgroStores(locationName, place) {
+  const searchTerms = [
+    `agro store ${locationName}`,
+    `fertilizer shop ${locationName}`,
+    `seed store ${locationName}`
+  ];
+
+  const settled = await Promise.allSettled(searchTerms.map((term) => searchNominatimPlaces(term)));
+  const rows = settled
+    .filter((entry) => entry.status === "fulfilled")
+    .flatMap((entry) => entry.value);
+
+  return mapNominatimRowsToStores(rows, place);
+}
+
 async function getNearbyAgroStores(locationName) {
   const cacheKey = normalizeLocationKey(locationName);
   const cached = getCachedWithTtl(agroStoreCache, cacheKey, agroStoreCacheTtlMs);
@@ -1328,58 +1409,75 @@ out center tags 70;`;
 );
 out center tags 70;`;
 
-  const strictElements = await fetchOverpassQuery(strictQuery);
-  const broadElements = strictElements.length >= 4 ? [] : await fetchOverpassQuery(broadQuery);
-  const elements = [...strictElements, ...broadElements];
+  let result;
 
-  const mapped = elements
-    .map((item) => {
-      const lat = item.lat ?? item.center?.lat;
-      const lon = item.lon ?? item.center?.lon;
-      if (typeof lat !== "number" || typeof lon !== "number") return null;
+  try {
+    const strictElements = await fetchOverpassQuery(strictQuery);
+    const broadElements = strictElements.length >= 4 ? [] : await fetchOverpassQuery(broadQuery);
+    const elements = [...strictElements, ...broadElements];
 
-      const tags = item.tags || {};
-      const name = tags.name || "Agri Input Store";
-      const shop = tags.shop || "";
+    const mapped = elements
+      .map((item) => {
+        const lat = item.lat ?? item.center?.lat;
+        const lon = item.lon ?? item.center?.lon;
+        if (typeof lat !== "number" || typeof lon !== "number") return null;
 
-      // Keep map entries that are clearly agro-related by name or shop type.
-      if (!(isAgroRelevantName(name) || isAgroRelevantShop(shop))) {
-        return null;
-      }
+        const tags = item.tags || {};
+        const name = tags.name || "Agri Input Store";
+        const shop = tags.shop || "";
 
-      const locality = [tags["addr:street"], tags["addr:suburb"], tags["addr:city"], tags["addr:state"]]
-        .filter(Boolean)
-        .join(", ");
+        // Keep map entries that are clearly agro-related by name or shop type.
+        if (!(isAgroRelevantName(name) || isAgroRelevantShop(shop))) {
+          return null;
+        }
 
-      return {
-        id: `${item.type}-${item.id}`,
-        name,
-        address: locality || "Address unavailable in map data",
-        phone: tags["contact:phone"] || tags.phone || "Phone not listed",
-        labels: inferStoreTags(name, { ...tags, shop }),
-        distanceKm: distanceInKm(place.latitude, place.longitude, lat, lon)
-      };
-    })
-    .filter(Boolean);
+        const locality = [tags["addr:street"], tags["addr:suburb"], tags["addr:city"], tags["addr:state"]]
+          .filter(Boolean)
+          .join(", ");
 
-  const unique = [];
-  const seen = new Set();
-  for (const row of mapped) {
-    const key = `${row.name.toLowerCase()}|${row.address.toLowerCase()}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    unique.push(row);
+        return {
+          id: `${item.type}-${item.id}`,
+          name,
+          address: locality || "Address unavailable in map data",
+          phone: tags["contact:phone"] || tags.phone || "Phone not listed",
+          labels: inferStoreTags(name, { ...tags, shop }),
+          distanceKm: distanceInKm(place.latitude, place.longitude, lat, lon)
+        };
+      })
+      .filter(Boolean);
+
+    const unique = [];
+    const seen = new Set();
+    for (const row of mapped) {
+      const key = `${row.name.toLowerCase()}|${row.address.toLowerCase()}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push(row);
+    }
+
+    const stores = unique.sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 6);
+    if (!stores.length) {
+      throw new Error("No tagged agro-input stores were found nearby. Try a nearby district or major city.");
+    }
+
+    result = {
+      displayName: place.displayName,
+      stores,
+      source: "overpass"
+    };
+  } catch {
+    const fallbackStores = await getFallbackAgroStores(locationName, place);
+
+    if (!fallbackStores.length) {
+      throw new Error("Map services are busy right now. Please retry in 30-60 seconds.");
+    }
+
+    result = {
+      displayName: place.displayName,
+      stores: fallbackStores,
+      source: "nominatim"
+    };
   }
-
-  const stores = unique.sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 6);
-  if (!stores.length) {
-    throw new Error("No tagged agro-input stores were found nearby. Try a nearby district or major city.");
-  }
-
-  const result = {
-    displayName: place.displayName,
-    stores
-  };
 
   setCachedWithTtl(agroStoreCache, cacheKey, result);
   return result;
@@ -1941,8 +2039,13 @@ function App() {
     try {
       const result = await getNearbyAgroStores(queryLocation);
       setNearbyStores(result.stores);
-      setStoreMetaInfo(`Nearby stores for ${result.displayName} • OpenStreetMap/Overpass live data`);
-      setStoreStatus(null);
+      if (result.source === "nominatim") {
+        setStoreMetaInfo(`Nearby stores for ${result.displayName} • OpenStreetMap fallback data`);
+        setStoreStatus({ type: "info", message: "Overpass is busy. Showing fallback store results." });
+      } else {
+        setStoreMetaInfo(`Nearby stores for ${result.displayName} • OpenStreetMap/Overpass live data`);
+        setStoreStatus(null);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to load nearby stores right now.";
       setNearbyStores([]);
