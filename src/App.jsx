@@ -208,27 +208,81 @@ function buildFertilizerPlanFromSoil(soilResult) {
   const recommendations = [];
 
   if (levels.nitrogen === "low") {
-    recommendations.push({ name: "Urea (46-0-0)", dosage: "110 kg/ha", stage: "Split at vegetative stage" });
-    recommendations.push({ name: "Calcium Nitrate", dosage: "200 kg/ha", stage: "Vegetative stage" });
+    recommendations.push({
+      name: "Urea (46-0-0)",
+      dosage: "110 kg/ha",
+      stage: "Split at vegetative stage",
+      purpose: "Quickly restores vegetative growth where leaves are pale or weak.",
+      tip: "Apply in 2-3 splits with light irrigation to reduce nitrogen loss."
+    });
+    recommendations.push({
+      name: "Calcium Nitrate",
+      dosage: "200 kg/ha",
+      stage: "Vegetative stage",
+      purpose: "Supports strong canopy growth and calcium availability.",
+      tip: "Avoid tank-mixing with sulphate/phosphate fertilizers in foliar sprays."
+    });
   }
 
   if (levels.phosphorus === "low") {
-    recommendations.push({ name: "DAP (18-46-0)", dosage: "100 kg/ha", stage: "Base application" });
-    recommendations.push({ name: "SSP", dosage: "125 kg/ha", stage: "At sowing/transplant" });
+    recommendations.push({
+      name: "DAP (18-46-0)",
+      dosage: "100 kg/ha",
+      stage: "Base application",
+      purpose: "Improves root establishment and early crop vigor.",
+      tip: "Place near root zone and avoid broadcasting in dry topsoil."
+    });
+    recommendations.push({
+      name: "SSP",
+      dosage: "125 kg/ha",
+      stage: "At sowing/transplant",
+      purpose: "Adds phosphorus with sulphur support for balanced early growth.",
+      tip: "Useful where sulphur deficiency is visible in younger leaves."
+    });
   }
 
   if (levels.potassium === "low") {
-    recommendations.push({ name: "MOP (0-0-60)", dosage: "80 kg/ha", stage: "Basal or early growth" });
-    recommendations.push({ name: "SOP", dosage: "50 kg/ha", stage: "Flowering-fruiting" });
+    recommendations.push({
+      name: "MOP (0-0-60)",
+      dosage: "80 kg/ha",
+      stage: "Basal or early growth",
+      purpose: "Builds stress tolerance and stronger stems.",
+      tip: "Use with adequate moisture for better potassium uptake."
+    });
+    recommendations.push({
+      name: "SOP",
+      dosage: "50 kg/ha",
+      stage: "Flowering-fruiting",
+      purpose: "Supports fruit quality and reduces chloride-sensitive stress.",
+      tip: "Prefer SOP for horticulture crops during reproductive stages."
+    });
   }
 
   if (levels.organicCarbon === "low") {
-    recommendations.push({ name: "Vermicompost", dosage: "2.0 t/ha", stage: "Before planting" });
+    recommendations.push({
+      name: "Vermicompost",
+      dosage: "2.0 t/ha",
+      stage: "Before planting",
+      purpose: "Improves soil aggregation, biology, and nutrient holding.",
+      tip: "Incorporate 2-3 weeks before planting for better microbial activity."
+    });
   }
 
   if (!recommendations.length) {
-    recommendations.push({ name: "NPK 19-19-19", dosage: "150 kg/ha", stage: "Base application" });
-    recommendations.push({ name: "Boron Foliar", dosage: "1 g/L", stage: "Flowering stage" });
+    recommendations.push({
+      name: "NPK 19-19-19",
+      dosage: "150 kg/ha",
+      stage: "Base application",
+      purpose: "General balanced nutrition where major nutrients are stable.",
+      tip: "Adjust upward only after next soil test confirms a deficiency."
+    });
+    recommendations.push({
+      name: "Boron Foliar",
+      dosage: "1 g/L",
+      stage: "Flowering stage",
+      purpose: "Improves flower retention and fruit set under micronutrient stress.",
+      tip: "Spray during cool hours and avoid concentration above label limits."
+    });
   }
 
   const unique = [];
@@ -246,28 +300,161 @@ function buildPesticidePlanFromDisease(diseaseResult) {
   const diseaseName = diseaseResult?.name || "";
   if (!diseaseName || !diseaseResult?.isDetected) {
     return [
-      { name: "Neem Oil (1500 ppm)", dosage: "3.0 mL/L water", schedule: "Preventive every 10 days" },
-      { name: "Trichoderma (bio-fungicide)", dosage: "5.0 g/L water", schedule: "Every 14 days" },
-      { name: "Copper Oxychloride", dosage: "2.5 g/L water", schedule: "Only if early symptoms appear" }
+      {
+        name: "Neem Oil (1500 ppm)",
+        dosage: "3.0 mL/L water",
+        schedule: "Preventive every 10 days",
+        purpose: "Suppresses early sucking pests and soft disease pressure.",
+        tip: "Spray on both leaf surfaces during low sunlight hours."
+      },
+      {
+        name: "Trichoderma (bio-fungicide)",
+        dosage: "5.0 g/L water",
+        schedule: "Every 14 days",
+        purpose: "Biological protection for root and foliar disease prevention.",
+        tip: "Do not mix with strong chemical fungicides in the same tank."
+      },
+      {
+        name: "Copper Oxychloride",
+        dosage: "2.5 g/L water",
+        schedule: "Only if early symptoms appear",
+        purpose: "Broad contact protection when first lesions are visible.",
+        tip: "Use before disease spread and avoid spraying before rainfall."
+      }
     ];
   }
 
   const protocol = diseasePesticideProtocols.find((item) => item.match.test(diseaseName));
   if (protocol) {
-    return protocol.products;
+    return protocol.products.map((item) => ({
+      ...item,
+      purpose: "Targets active foliar disease pressure.",
+      tip: "Rotate active ingredients across sprays to delay resistance."
+    }));
   }
 
   return [
-    { name: "Mancozeb 75 WP", dosage: "2.5 g/L water", schedule: "Every 7 days" },
-    { name: "Copper Oxychloride", dosage: "3.0 g/L water", schedule: "Every 10 days" },
-    { name: "Azoxystrobin", dosage: "1.0 mL/L water", schedule: "Every 14 days" }
+    {
+      name: "Mancozeb 75 WP",
+      dosage: "2.5 g/L water",
+      schedule: "Every 7 days",
+      purpose: "Protective cover for broad fungal disease complexes.",
+      tip: "Maintain full leaf coverage for best preventive effect."
+    },
+    {
+      name: "Copper Oxychloride",
+      dosage: "3.0 g/L water",
+      schedule: "Every 10 days",
+      purpose: "Contact fungicide support for humid disease windows.",
+      tip: "Avoid repeated back-to-back use without rotation."
+    },
+    {
+      name: "Azoxystrobin",
+      dosage: "1.0 mL/L water",
+      schedule: "Every 14 days",
+      purpose: "Systemic support during active disease progression.",
+      tip: "Use with a protectant partner if field pressure is high."
+    }
   ];
+}
+
+function buildPesticideInsights(diseaseResult) {
+  const severity = String(diseaseResult?.severity || "").toLowerCase();
+
+  if (!diseaseResult?.isDetected) {
+    return {
+      focus: [
+        "No strong disease signal now: keep preventive biocontrol and weekly scouting.",
+        "Spray only when threshold symptoms appear to avoid unnecessary chemical cost.",
+        "Prioritize canopy airflow, clean tools, and irrigation hygiene to reduce outbreaks."
+      ],
+      checklist: [
+        "Spray in early morning/evening, never in strong wind or midday heat.",
+        "Keep at least one rain-free window after spray for better retention.",
+        "Wear gloves, mask, and follow label PHI/REI before harvest or re-entry."
+      ]
+    };
+  }
+
+  if (severity === "high") {
+    return {
+      focus: [
+        "High severity detected: complete first spray within 24 hours and isolate hotspots.",
+        "Re-scout in 48-72 hours and continue only if new lesions are still expanding.",
+        "Use strict rotation between chemical groups across rounds to slow resistance."
+      ],
+      checklist: [
+        "Start from the least infected block and move to heavily infected blocks last.",
+        "Avoid tank mixes with uncertain compatibility; do a jar test first.",
+        "Record date, product, dose, and response to refine next spray cycle."
+      ]
+    };
+  }
+
+  return {
+    focus: [
+      "Disease pressure is manageable: use targeted sprays and avoid blanket application.",
+      "Support crop recovery with balanced nutrition and regular canopy sanitation.",
+      "Confirm symptom trend after each round before repeating the same chemistry."
+    ],
+    checklist: [
+      "Calibrate sprayer volume so both upper and lower leaf surfaces are covered.",
+      "Leave a consistent spray interval; do not shorten unless pressure rises sharply.",
+      "Observe pre-harvest interval to protect produce quality and market acceptance."
+    ]
+  };
+}
+
+function buildFertilizerInsights(soilResult) {
+  const levels = soilResult?.levels || {};
+  const hasSoilData = Boolean(soilResult);
+  const focus = [];
+
+  if (!hasSoilData) {
+    focus.push("Use a balanced starter dose first, then refine plan using latest soil test values.");
+  }
+
+  if (levels.nitrogen === "low") {
+    focus.push("Nitrogen is low: prioritize split N applications to reduce leaching and volatilization loss.");
+  }
+  if (levels.phosphorus === "low") {
+    focus.push("Phosphorus is low: place P near root zone for stronger early root growth.");
+  }
+  if (levels.potassium === "low") {
+    focus.push("Potassium is low: strengthen stress tolerance before flowering and fruit load.");
+  }
+  if (levels.organicCarbon === "low") {
+    focus.push("Organic carbon is low: add compost/FYM to improve nutrient holding and soil structure.");
+  }
+
+  if (soilResult?.water_risk === "Waterlogging Risk") {
+    focus.push("Waterlogging risk: delay top-dressing before heavy rainfall and improve drainage channels.");
+  } else if (soilResult?.water_risk === "Drought Stress") {
+    focus.push("Drought risk: apply fertilizers with moisture support or light irrigation for uptake.");
+  }
+
+  if (!focus.length) {
+    focus.push("Nutrient profile is fairly balanced; maintain schedule and retest in 45-60 days.");
+    focus.push("Shift toward maintenance nutrition and avoid extra single-nutrient loading.");
+  }
+
+  return {
+    focus: focus.slice(0, 4),
+    checklist: [
+      "Apply major fertilizers in splits based on crop stage, not in one heavy dose.",
+      "Keep at least 5-7 days gap between strong pesticide spray and foliar nutrients.",
+      "Do not mix calcium and phosphate/sulphate fertilizers in the same tank.",
+      "Retest soil after one crop cycle to validate correction strategy."
+    ]
+  };
 }
 
 function buildInputRecommendations(diseaseResult, soilResult) {
   return {
     pesticides: buildPesticidePlanFromDisease(diseaseResult),
-    fertilizers: buildFertilizerPlanFromSoil(soilResult)
+    fertilizers: buildFertilizerPlanFromSoil(soilResult),
+    pesticideInsights: buildPesticideInsights(diseaseResult),
+    fertilizerInsights: buildFertilizerInsights(soilResult)
   };
 }
 
@@ -2277,9 +2464,27 @@ function App() {
                     <li key={item.name}>
                       <p className="input-name">{item.name}</p>
                       <p className="input-meta">{item.dosage} · {item.schedule}</p>
+                      {item.purpose && <p className="input-detail">{item.purpose}</p>}
+                      {item.tip && <p className="input-tip">Tip: {item.tip}</p>}
                     </li>
                   ))}
                 </ul>
+                <div className="input-insight-panel">
+                  <p className="input-insight-title">Pesticide Insights</p>
+                  <ul>
+                    {inputRecommendations.pesticideInsights.focus.map((point) => (
+                      <li key={point}>{point}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="input-insight-panel input-insight-panel-soft">
+                  <p className="input-insight-title">Safety and Application Checklist</p>
+                  <ul>
+                    {inputRecommendations.pesticideInsights.checklist.map((point) => (
+                      <li key={point}>{point}</li>
+                    ))}
+                  </ul>
+                </div>
               </article>
 
               <article className="input-plan-card">
@@ -2292,9 +2497,27 @@ function App() {
                     <li key={item.name}>
                       <p className="input-name">{item.name}</p>
                       <p className="input-meta">{item.dosage} · {item.stage}</p>
+                      {item.purpose && <p className="input-detail">{item.purpose}</p>}
+                      {item.tip && <p className="input-tip">Tip: {item.tip}</p>}
                     </li>
                   ))}
                 </ul>
+                <div className="input-insight-panel">
+                  <p className="input-insight-title">Fertilizer Insights</p>
+                  <ul>
+                    {inputRecommendations.fertilizerInsights.focus.map((point) => (
+                      <li key={point}>{point}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="input-insight-panel input-insight-panel-soft">
+                  <p className="input-insight-title">Nutrient Management Checklist</p>
+                  <ul>
+                    {inputRecommendations.fertilizerInsights.checklist.map((point) => (
+                      <li key={point}>{point}</li>
+                    ))}
+                  </ul>
+                </div>
               </article>
             </div>
 
