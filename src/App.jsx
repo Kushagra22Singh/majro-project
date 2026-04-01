@@ -98,6 +98,12 @@ const overpassEndpoints = [
   "https://overpass.kumi.systems/api/interpreter",
   "https://lz4.overpass-api.de/api/interpreter"
 ];
+const geocodeCache = new Map();
+const agroStoreCache = new Map();
+const geocodeCacheTtlMs = 24 * 60 * 60 * 1000;
+const agroStoreCacheTtlMs = 10 * 60 * 1000;
+const geoRequestTimeoutMs = 7000;
+const overpassRequestTimeoutMs = 8000;
 const isGitHubPagesHost =
   typeof window !== "undefined" && /github\.io$/i.test(window.location.hostname);
 const defaultHostedApiUrl = "https://leaflens-ml-api.onrender.com";
@@ -167,6 +173,40 @@ function inferStoreTags(name, tags) {
   return labels.length ? labels : ["Farm Inputs"];
 }
 
+function normalizeLocationKey(value = "") {
+  return String(value).trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function getCachedWithTtl(cache, key, ttlMs) {
+  const row = cache.get(key);
+  if (!row) return null;
+
+  if (Date.now() - row.timestamp > ttlMs) {
+    cache.delete(key);
+    return null;
+  }
+
+  return row.value;
+}
+
+function setCachedWithTtl(cache, key, value) {
+  cache.set(key, {
+    timestamp: Date.now(),
+    value
+  });
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
+
 function isAgroRelevantName(name = "") {
   return /(agro|agri|fertili[sz]er|pesticide|seed|krishi|kisan|nursery|crop)/i.test(name);
 }
@@ -180,13 +220,13 @@ async function fetchOverpassQuery(query) {
 
   for (const endpoint of overpassEndpoints) {
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetchWithTimeout(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
         },
         body: new URLSearchParams({ data: query }).toString()
-      });
+      }, overpassRequestTimeoutMs);
 
       if (!response.ok) {
         lastError = new Error(`Overpass request failed (${response.status})`);
@@ -1204,7 +1244,7 @@ function formatUpdatedTime(timeZone) {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url);
+  const response = await fetchWithTimeout(url, {}, geoRequestTimeoutMs);
   if (!response.ok) {
     throw new Error("Unable to reach weather service right now. Please try again.");
   }
@@ -1212,6 +1252,12 @@ async function fetchJson(url) {
 }
 
 async function getLocationDetails(locationName) {
+  const cacheKey = normalizeLocationKey(locationName);
+  const cached = getCachedWithTtl(geocodeCache, cacheKey, geocodeCacheTtlMs);
+  if (cached) {
+    return cached;
+  }
+
   const query = new URLSearchParams({
     name: locationName,
     count: "1",
@@ -1227,12 +1273,15 @@ async function getLocationDetails(locationName) {
   const bestMatch = data.results[0];
   const placeParts = [bestMatch.name, bestMatch.admin1, bestMatch.country].filter(Boolean);
 
-  return {
+  const result = {
     latitude: bestMatch.latitude,
     longitude: bestMatch.longitude,
     timeZone: bestMatch.timezone || "Asia/Kolkata",
     displayName: placeParts.join(", ")
   };
+
+  setCachedWithTtl(geocodeCache, cacheKey, result);
+  return result;
 }
 
 async function getForecast(latitude, longitude, timeZone) {
@@ -1253,25 +1302,31 @@ async function getForecast(latitude, longitude, timeZone) {
 }
 
 async function getNearbyAgroStores(locationName) {
+  const cacheKey = normalizeLocationKey(locationName);
+  const cached = getCachedWithTtl(agroStoreCache, cacheKey, agroStoreCacheTtlMs);
+  if (cached) {
+    return cached;
+  }
+
   const place = await getLocationDetails(locationName);
   const strictRadius = 12000;
-  const broadRadius = 18000;
+  const broadRadius = 15000;
 
-  const strictQuery = `[out:json][timeout:30];
+  const strictQuery = `[out:json][timeout:18];
 (
   node["shop"~"agrarian|farm|garden_centre",i](around:${strictRadius},${place.latitude},${place.longitude});
   way["shop"~"agrarian|farm|garden_centre",i](around:${strictRadius},${place.latitude},${place.longitude});
   node["name"~"agro|agri|fertili[sz]er|pesticide|seed|krishi|kisan|nursery",i](around:${strictRadius},${place.latitude},${place.longitude});
   way["name"~"agro|agri|fertili[sz]er|pesticide|seed|krishi|kisan|nursery",i](around:${strictRadius},${place.latitude},${place.longitude});
 );
-out center tags 120;`;
+out center tags 70;`;
 
-  const broadQuery = `[out:json][timeout:30];
+  const broadQuery = `[out:json][timeout:18];
 (
   node["shop"~"hardware|garden_centre|doityourself",i](around:${broadRadius},${place.latitude},${place.longitude});
   way["shop"~"hardware|garden_centre|doityourself",i](around:${broadRadius},${place.latitude},${place.longitude});
 );
-out center tags 120;`;
+out center tags 70;`;
 
   const strictElements = await fetchOverpassQuery(strictQuery);
   const broadElements = strictElements.length >= 4 ? [] : await fetchOverpassQuery(broadQuery);
@@ -1321,10 +1376,13 @@ out center tags 120;`;
     throw new Error("No tagged agro-input stores were found nearby. Try a nearby district or major city.");
   }
 
-  return {
+  const result = {
     displayName: place.displayName,
     stores
   };
+
+  setCachedWithTtl(agroStoreCache, cacheKey, result);
+  return result;
 }
 
 function getDiseaseInsight(result, t) {
