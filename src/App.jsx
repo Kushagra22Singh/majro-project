@@ -1879,6 +1879,7 @@ function App() {
         const confidence = data.confidence.toFixed(2);
         const needsReview = Boolean(data.needs_review);
         const uncertaintyReasons = data.uncertainty_reasons || [];
+        const predictedCrop = data.crop_name || crop;
         const confidenceMargin = typeof data.confidence_margin === "number"
           ? data.confidence_margin.toFixed(2)
           : "N/A";
@@ -1890,8 +1891,6 @@ function App() {
         } else if (diseaseName.includes("Blast") || diseaseName.includes("Blight")) {
           severity = "High";
         }
-
-        const displayCrop = crop === "all" ? "All crops" : crop;
 
         // Create result payload
         const resultPayload = {
@@ -1905,7 +1904,7 @@ function App() {
             : isHealthy
               ? "Continue regular monitoring, balanced irrigation, and preventive care."
               : "Please consult with an agronomist for detailed treatment recommendations.",
-          crop: [displayCrop],
+          crop: [predictedCrop],
           statusLabel: isHealthy ? t.diseaseNotDetected : t.diseaseDetected,
           confidence: parseFloat(confidence),
           topPredictions: data.top_3 || [],
@@ -1918,7 +1917,7 @@ function App() {
           ...resultPayload,
           imageSource: previewUrl,
           isDetected: !isHealthy,
-          imageAlt: `${displayCrop} leaf uploaded for analysis`
+          imageAlt: `${predictedCrop} leaf uploaded for analysis`
         });
         setDetectionStatus(null);
       })
