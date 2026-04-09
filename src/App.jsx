@@ -148,6 +148,29 @@ const diseasePesticideProtocols = [
   }
 ];
 
+const cropFilenameHints = [
+  { crop: "Apple", patterns: [/\bapple\b/i] },
+  { crop: "Blueberry", patterns: [/\bblueberry\b/i] },
+  { crop: "Cherry", patterns: [/\bcherry\b/i] },
+  { crop: "Maize", patterns: [/\bmaize\b/i, /\bcorn\b/i] },
+  { crop: "Grape", patterns: [/\bgrape\b/i] },
+  { crop: "Orange", patterns: [/\borange\b/i] },
+  { crop: "Peach", patterns: [/\bpeach\b/i] },
+  { crop: "Bell Pepper", patterns: [/\bbell\s*pepper\b/i, /\bpepper\b/i] },
+  { crop: "Potato", patterns: [/\bpotato\b/i] },
+  { crop: "Raspberry", patterns: [/\braspberry\b/i] },
+  { crop: "Soybean", patterns: [/\bsoybean\b/i] },
+  { crop: "Squash", patterns: [/\bsquash\b/i] },
+  { crop: "Strawberry", patterns: [/\bstrawberry\b/i] },
+  { crop: "Tomato", patterns: [/\btomato\b/i] }
+];
+
+function inferCropFromFilename(fileName = "") {
+  const baseName = String(fileName).replace(/[_-]+/g, " ");
+  const match = cropFilenameHints.find((entry) => entry.patterns.some((pattern) => pattern.test(baseName)));
+  return match?.crop || null;
+}
+
 function toRad(value) {
   return (value * Math.PI) / 180;
 }
@@ -2260,6 +2283,12 @@ function App() {
                       onChange={(event) => {
                         const file = event.target.files?.[0] || null;
                         setSelectedFile(file);
+                        if (file && crop === "all") {
+                          const inferredCrop = inferCropFromFilename(file.name);
+                          if (inferredCrop) {
+                            setCrop(inferredCrop);
+                          }
+                        }
                         setUploadStatus(file ? `${t.selectedImage}: ${file.name}` : t.noImageSelected);
                       }}
                     />

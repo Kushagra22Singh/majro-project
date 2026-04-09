@@ -110,7 +110,7 @@ def get_allowed_indices(crop_name):
     crop_key = (crop_name or "all").strip().lower()
     aliases = CROP_ALIASES.get(crop_key)
     if not aliases:
-        return []
+        return list(range(len(DISEASE_CLASSES)))
     if aliases == ["*"]:
         return list(range(len(DISEASE_CLASSES)))
 
@@ -355,9 +355,8 @@ def predict():
         if file.filename == '':
             return jsonify({'error': 'No file selected'}), 400
 
-        # Crop selection is treated as optional context only.
-        # The model predicts across all classes so the image alone drives the result.
         selected_crop = request.form.get('crop', 'all')
+        allowed_indices = get_allowed_indices(selected_crop)
 
         # Load image once for both quality checks and model preprocessing.
         image = Image.open(io.BytesIO(file.read())).convert('RGB')
@@ -367,18 +366,19 @@ def predict():
         # Run inference
         with torch.no_grad():
             outputs = model(image_tensor)
-            probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
-            confidence, predicted_class = torch.max(probabilities, dim=0)
+            filtered_logits = outputs[0, allowed_indices]
+            filtered_probabilities = torch.nn.functional.softmax(filtered_logits, dim=0)
+            confidence, predicted_local = torch.max(filtered_probabilities, dim=0)
         
         # Get results
-        class_idx = predicted_class.item()
+        class_idx = allowed_indices[predicted_local.item()]
         disease_name = DISEASE_CLASSES[class_idx]
         predicted_crop = disease_name.split('___', 1)[0].replace('_', ' ')
         confidence_score = float(confidence.item()) * 100
         
         # Get top 3 predictions and top-2 margin for uncertainty checks.
-        top_k = min(3, len(DISEASE_CLASSES))
-        top_probs, top_indices = torch.topk(probabilities, top_k)
+        top_k = min(3, len(allowed_indices))
+        top_probs, top_local_indices = torch.topk(filtered_probabilities, top_k)
 
         top_conf = float(top_probs[0].item()) * 100
         second_conf = float(top_probs[1].item()) * 100 if top_k > 1 else 0.0
@@ -395,10 +395,10 @@ def predict():
 
         top_predictions = [
             {
-                'disease': DISEASE_CLASSES[idx.item()],
+                'disease': DISEASE_CLASSES[allowed_indices[idx.item()]],
                 'confidence': float(prob.item()) * 100
             }
-            for prob, idx in zip(top_probs, top_indices)
+            for prob, idx in zip(top_probs, top_local_indices)
         ]
         
         return jsonify({
