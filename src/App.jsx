@@ -1653,7 +1653,7 @@ function App() {
   const t = translations[language] || translations.en;
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [crop, setCrop] = useState("Tomato");
+  const [crop, setCrop] = useState("all");
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState(t.noImageSelected);
   const [diseaseResult, setDiseaseResult] = useState(null);
@@ -1891,6 +1891,8 @@ function App() {
           severity = "High";
         }
 
+        const displayCrop = crop === "all" ? "All crops" : crop;
+
         // Create result payload
         const resultPayload = {
           name: diseaseName,
@@ -1903,7 +1905,7 @@ function App() {
             : isHealthy
               ? "Continue regular monitoring, balanced irrigation, and preventive care."
               : "Please consult with an agronomist for detailed treatment recommendations.",
-          crop: [crop],
+          crop: [displayCrop],
           statusLabel: isHealthy ? t.diseaseNotDetected : t.diseaseDetected,
           confidence: parseFloat(confidence),
           topPredictions: data.top_3 || [],
@@ -1916,7 +1918,7 @@ function App() {
           ...resultPayload,
           imageSource: previewUrl,
           isDetected: !isHealthy,
-          imageAlt: `${crop} leaf uploaded for analysis`
+          imageAlt: `${displayCrop} leaf uploaded for analysis`
         });
         setDetectionStatus(null);
       })
@@ -2244,6 +2246,7 @@ function App() {
                   <div className="form-group">
                     <label htmlFor="crop-type">{t.selectCrop}</label>
                     <select id="crop-type" value={crop} onChange={(event) => setCrop(event.target.value)}>
+                      <option value="all">Auto detect (all crops)</option>
                       {supportedModelCrops.map((cropName) => (
                         <option key={cropName}>{cropName}</option>
                       ))}

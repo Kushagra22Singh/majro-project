@@ -85,6 +85,9 @@ DISEASE_CLASSES = [
 
 CROP_ALIASES = {
     "all": ["*"],
+    "all crops": ["*"],
+    "auto": ["*"],
+    "auto detect": ["*"],
     "apple": ["Apple"],
     "blueberry": ["Blueberry"],
     "cherry": ["Cherry_(including_sour)"],
