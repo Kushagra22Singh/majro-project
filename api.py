@@ -425,6 +425,15 @@ def health():
     return jsonify({'status': 'API is running', 'model_classes': len(DISEASE_CLASSES)})
 
 
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify({
+        'service': 'Leaflens ML API',
+        'status': 'ok',
+        'endpoints': ['/health', '/predict', '/analyze-soil']
+    })
+
+
 @app.route('/analyze-soil', methods=['POST'])
 def analyze_soil():
     try:
