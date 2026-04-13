@@ -108,10 +108,11 @@ const overpassRequestTimeoutMs = 8000;
 const isGitHubPagesHost =
   typeof window !== "undefined" && /github\.io$/i.test(window.location.hostname);
 const defaultHostedApiUrl = "https://leaflens-ml-api-wzln.onrender.com";
-const apiBaseUrl = (
-  import.meta.env.VITE_API_BASE_URL || (isGitHubPagesHost ? defaultHostedApiUrl : "http://localhost:5000")
-).replace(/\/$/, "");
-const hasConfiguredExternalApi = Boolean(import.meta.env.VITE_API_BASE_URL);
+const configuredApiBaseUrl = String(import.meta.env.VITE_API_BASE_URL || "")
+  .trim()
+  .replace(/\/+$/, "");
+const apiBaseUrl = configuredApiBaseUrl || (isGitHubPagesHost ? defaultHostedApiUrl : "http://localhost:5000");
+const hasConfiguredExternalApi = configuredApiBaseUrl.length > 0;
 
 const diseasePesticideProtocols = [
   {
