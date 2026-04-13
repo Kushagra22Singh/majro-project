@@ -107,7 +107,7 @@ const geoRequestTimeoutMs = 7000;
 const overpassRequestTimeoutMs = 8000;
 const isGitHubPagesHost =
   typeof window !== "undefined" && /github\.io$/i.test(window.location.hostname);
-const defaultHostedApiUrl = "https://leaflens-ml-api.onrender.com";
+const defaultHostedApiUrl = "https://leaflens-ml-api-wzln.onrender.com";
 const apiBaseUrl = (
   import.meta.env.VITE_API_BASE_URL || (isGitHubPagesHost ? defaultHostedApiUrl : "http://localhost:5000")
 ).replace(/\/$/, "");
