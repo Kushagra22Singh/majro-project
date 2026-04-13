@@ -132,6 +132,14 @@ def assess_image_quality(image_rgb):
     dy = np.diff(gray, axis=0)
     sharpness = float(np.var(dx) + np.var(dy))
 
+    # Simple vegetation coverage proxy (green/yellow-brown leaf-like pixels).
+    r = arr[:, :, 0]
+    g = arr[:, :, 1]
+    b = arr[:, :, 2]
+    green_mask = (g > (r * 1.08)) & (g > (b * 1.08)) & (g > 45)
+    yellow_brown_mask = (r > 60) & (g > 45) & (b < g) & (r >= g * 0.85)
+    vegetation_ratio = float(np.mean(green_mask | yellow_brown_mask))
+
     warnings = []
     if brightness < 35:
         warnings.append("Image is very dark. Retake photo in better light.")
@@ -141,9 +149,13 @@ def assess_image_quality(image_rgb):
     if sharpness < 40:
         warnings.append("Image appears blurry. Hold camera steady and refocus.")
 
+    if vegetation_ratio < 0.08:
+        warnings.append("Image may not contain enough clear leaf area.")
+
     return {
         'brightness': brightness,
         'sharpness': sharpness,
+        'vegetation_ratio': vegetation_ratio,
         'warnings': warnings
     }
 
@@ -314,6 +326,25 @@ def analyze_soil_profile(payload):
         'recommendations': recommendations
     }
 
+
+def should_flag_invalid_input(quality, confidence_score, confidence_margin):
+    reasons = []
+
+    if quality.get('vegetation_ratio', 0.0) < 0.08:
+        reasons.append('Uploaded photo does not appear to contain enough leaf area.')
+    if quality.get('brightness', 0.0) < 25 or quality.get('brightness', 0.0) > 235:
+        reasons.append('Lighting is unsuitable for reliable diagnosis.')
+    if quality.get('sharpness', 0.0) < 25:
+        reasons.append('Photo sharpness is too low for reliable diagnosis.')
+
+    # Prediction-level ambiguity checks.
+    if confidence_score < 45:
+        reasons.append('Model confidence is too low for a reliable disease label.')
+    if confidence_score < 70 and confidence_margin < 12:
+        reasons.append('Top predictions are too close; result is ambiguous.')
+
+    return (len(reasons) > 0, reasons)
+
 # ===== Initialize Flask App =====
 app = Flask(__name__)
 CORS(app)
@@ -391,6 +422,19 @@ def predict():
             uncertainty_reasons.append("Top prediction is too close to second-best prediction.")
         uncertainty_reasons.extend(quality['warnings'])
 
+        invalid_image, invalid_reasons = should_flag_invalid_input(
+            quality,
+            confidence_score,
+            confidence_margin
+        )
+
+        if invalid_image:
+            for reason in invalid_reasons:
+                if reason not in uncertainty_reasons:
+                    uncertainty_reasons.append(reason)
+            disease_name = 'Uncertain_input'
+            predicted_crop = 'Unknown'
+
         needs_review = len(uncertainty_reasons) > 0
 
         top_predictions = [
@@ -409,10 +453,12 @@ def predict():
             'confidence': confidence_score,
             'top_3': top_predictions,
             'needs_review': needs_review,
+            'invalid_image': invalid_image,
             'confidence_margin': confidence_margin,
             'quality': {
                 'brightness': quality['brightness'],
-                'sharpness': quality['sharpness']
+                'sharpness': quality['sharpness'],
+                'vegetation_ratio': quality['vegetation_ratio']
             },
             'uncertainty_reasons': uncertainty_reasons
         })

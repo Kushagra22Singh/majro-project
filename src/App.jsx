@@ -1897,12 +1897,15 @@ function App() {
         }
 
         // Parse disease name and severity
-        const diseaseName = data.disease.replace(/_/g, " ");
-        const isHealthy = diseaseName.toLowerCase().includes("healthy");
+        const invalidImage = Boolean(data.invalid_image);
+        const diseaseName = invalidImage
+          ? "Uncertain Result"
+          : String(data.disease || "Unknown").replace(/_/g, " ");
+        const isHealthy = invalidImage || diseaseName.toLowerCase().includes("healthy");
         const confidence = data.confidence.toFixed(2);
         const needsReview = Boolean(data.needs_review);
         const uncertaintyReasons = data.uncertainty_reasons || [];
-        const predictedCrop = data.crop_name || crop;
+        const predictedCrop = invalidImage ? "Unknown" : (data.crop_name || crop);
         const confidenceMargin = typeof data.confidence_margin === "number"
           ? data.confidence_margin.toFixed(2)
           : "N/A";
@@ -1918,17 +1921,21 @@ function App() {
         // Create result payload
         const resultPayload = {
           name: diseaseName,
-          desc: needsReview
-            ? `Model predicted ${diseaseName} (${confidence}%), but this result needs verification.`
-            : `ML model detected: ${diseaseName} with ${confidence}% confidence.`,
+          desc: invalidImage
+            ? `The uploaded image could not be verified as a clear leaf sample. Confidence was ${confidence}% and this result needs verification.`
+            : needsReview
+              ? `Model predicted ${diseaseName} (${confidence}%), but this result needs verification.`
+              : `ML model detected: ${diseaseName} with ${confidence}% confidence.`,
           severity,
-          advice: needsReview
-            ? t.analyzeTimeout
-            : isHealthy
-              ? "Continue regular monitoring, balanced irrigation, and preventive care."
-              : "Please consult with an agronomist for detailed treatment recommendations.",
+          advice: invalidImage
+            ? "Upload a clear close-up leaf photo in natural light, filling most of the frame, then try Analyze Image again."
+            : needsReview
+              ? "Retake a clearer leaf photo and verify this result before spraying inputs."
+              : isHealthy
+                ? "Continue regular monitoring, balanced irrigation, and preventive care."
+                : "Please consult with an agronomist for detailed treatment recommendations.",
           crop: [predictedCrop],
-          statusLabel: isHealthy ? t.diseaseNotDetected : t.diseaseDetected,
+          statusLabel: invalidImage ? t.needsVerification : (isHealthy ? t.diseaseNotDetected : t.diseaseDetected),
           confidence: parseFloat(confidence),
           topPredictions: data.top_3 || [],
           needsReview,
